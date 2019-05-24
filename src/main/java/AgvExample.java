@@ -83,7 +83,7 @@ public final class AgvExample {
 
         final Simulator sim = Simulator.builder()
                 .addModel(
-                        RoadModelBuilders.dynamicGraph(GraphCreator.createGraph())
+                        RoadModelBuilders.dynamicGraph(GraphCreator.createSimpleGraph())
                                 .withCollisionAvoidance()
                                 .withDistanceUnit(SI.METER)
                                 .withVehicleLength(VEHICLE_LENGTH))
