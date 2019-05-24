@@ -21,7 +21,7 @@ This repository holds the MAS project.
  * Create a repairing station
   *  A car that has died out goes there and is out of service for 'y' ticks.
 * Create Ants
-  * Exploration ant - Find the nearest vacant charging station; Poll agents for prior pick up/drop locations , find ara with highest pick     up density.
+  * Exploration ant - Find the nearest vacant charging station; Poll regions for prior pick up/drop locations , find area with highest pick up/drop density.
   * Intention - Reserve that charging station; Reserve area with highest pickup density
 * Setup experimental playground
   * Central data distributor - Nearest customer.
