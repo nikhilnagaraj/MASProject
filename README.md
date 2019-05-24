@@ -4,11 +4,17 @@ This repository holds the MAS project.
 ## Things to do (Mark when done!)
 
 * Create Graph - Done
+* Create Regions
+  * Each region has 4 ajacent regions
+  * The ant moves from region to region
+  * 
 * Create Taxi Agent - Have to Modify 
   * Battery capacity and behaviour
   * Deploying ants
   * Pick up and drop off
-  * Store preious pick up data / drop off data - modifiable
+  * Drop pheromone previous pick up data / drop off data - modifiable
+     The taxi drops a pheromene at its current location, the oad model is responsible for collectioin and alloting it to the appropriate region
+  
 * Create Charging Agent
   * Capacity modifiable- but start with 1
   * Cannot move when reserved
