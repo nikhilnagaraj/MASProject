@@ -131,8 +131,9 @@ public final class TaxiExample {
                     DEPOT_CAPACITY));
         }
         for (int i = 0; i < NUM_TAXIS; i++) {
+            AgentBattery newBattery = new AgentBattery(5000, 10);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
-                    TAXI_CAPACITY));
+                    TAXI_CAPACITY, newBattery));
         }
         for (int i = 0; i < NUM_CUSTOMERS; i++) {
             simulator.register(new Customer(

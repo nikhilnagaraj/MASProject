@@ -5,11 +5,10 @@ This repository holds the MAS project.
 
 * Create Graph - Done
 * Create Regions
-  * Each region has 4 ajacent regions
+  * Each region has 4 adjacent regions
   * The ant moves from region to region
-  * 
 * Create Taxi Agent - Have to Modify 
-  * Battery capacity and behaviour
+  * Battery capacity and behaviour - DONE
   * Deploying ants
   * Pick up and drop off
   * Drop pheromone previous pick up data / drop off data - modifiable

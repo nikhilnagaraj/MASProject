@@ -33,13 +33,15 @@ import com.google.common.base.Optional;
 class Taxi extends Vehicle {
     private static final double SPEED = 1000d;
     private Optional<Parcel> curr;
+    private AgentBattery battery;
 
-    Taxi(Point startPosition, int capacity) {
+    Taxi(Point startPosition, int capacity, AgentBattery battery) {
         super(VehicleDTO.builder()
                 .capacity(capacity)
                 .startPosition(startPosition)
                 .speed(SPEED)
                 .build());
+        this.battery = battery;
         curr = Optional.absent();
     }
 
