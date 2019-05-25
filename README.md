@@ -4,7 +4,7 @@ This repository holds the MAS project.
 ## Things to do (Mark when done!)
 
 * Create Graph - Done
-* Create Regions
+* Create Regions - problem: how to define boundaries (in points) of specific region 
   * Each region has 4 adjacent regions
   * The ant moves from region to region
 * Create Taxi Agent - Have to Modify 
