@@ -18,6 +18,7 @@ import com.github.rinde.rinsim.core.model.pdp.PDPModel;
 import com.github.rinde.rinsim.core.model.pdp.Parcel;
 import com.github.rinde.rinsim.core.model.pdp.Vehicle;
 import com.github.rinde.rinsim.core.model.pdp.VehicleDTO;
+import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.core.model.road.RoadModels;
 import com.github.rinde.rinsim.core.model.time.TimeLapse;
@@ -70,14 +71,20 @@ class Taxi extends Vehicle {
                 curr = Optional.absent();
             } else if (inCargo) {
                 // if it is in cargo, go to its destination
-                rm.moveTo(this, curr.get().getDeliveryLocation(), time);
+                if (this.battery.getCurrentBatteryCapacity() > 0) {
+                    MoveProgress moveDetails = rm.moveTo(this, curr.get().getDeliveryLocation(), time);
+                    this.battery.discharge(moveDetails);
+                } else {
+                    rm.removeObject(this);
+                }
                 if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
                     // deliver when we arrive
                     pm.deliver(this, curr.get(), time);
                 }
             } else {
                 // it is still available, go there as fast as possible
-                rm.moveTo(this, curr.get(), time);
+                MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
+                this.battery.discharge(moveDetails);
                 if (rm.equalPosition(this, curr.get())) {
                     // pickup customer
                     pm.pickup(this, curr.get(), time);

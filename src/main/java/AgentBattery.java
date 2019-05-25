@@ -59,7 +59,11 @@ public class AgentBattery {
          *       traveled.
          */
 
-        this.currentBatteryCapacity -= moveDetails.distance().getValue();
+        if (moveDetails.distance().getValue() > this.currentBatteryCapacity) {
+            this.currentBatteryCapacity = 0;
+        } else {
+            this.currentBatteryCapacity -= moveDetails.distance().getValue();
+        }
     }
 
     public void charge(TimeLapse time) {
