@@ -4,7 +4,7 @@ This repository holds the MAS project.
 ## Things to do (Mark when done!)
 
 * Create Graph - Done
-* Create Regions
+* Create Regions - problem: how to define boundaries (in points) of specific region 
   * Each region has 4 adjacent regions
   * The ant moves from region to region
 * Create Taxi Agent - Have to Modify 
@@ -25,7 +25,7 @@ This repository holds the MAS project.
   * Ability to block an area - Ability modifiable, Radius Modifiable (Low priority)
  * Create a repairing station
   *  A car that has died out goes there and is out of service for 'y' ticks.
-* Create Ants
+* Create Ants - Ant abstraction, TODO: PheromoneInfrastructure, specific Ants
   * Exploration ant - Find the nearest vacant charging station; Poll regions for prior pick up/drop locations , find area with highest pick up/drop density.
   * Intention - Reserve that charging station; Reserve area with highest pickup density
 * Setup experimental playground
