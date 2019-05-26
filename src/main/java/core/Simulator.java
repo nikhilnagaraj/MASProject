@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package Simulator;
+package core;
 
-import com.github.rinde.rinsim.core.SimulatorAPI;
-import com.github.rinde.rinsim.core.SimulatorUser;
-import com.github.rinde.rinsim.core.model.*;
-import com.github.rinde.rinsim.core.model.Model.AbstractModel;
-import com.github.rinde.rinsim.core.model.ModelBuilder.AbstractModelBuilder;
-import com.github.rinde.rinsim.core.model.rand.RandomModel;
-import com.github.rinde.rinsim.core.model.rand.RandomProvider;
-import com.github.rinde.rinsim.core.model.time.ClockController;
-import com.github.rinde.rinsim.core.model.time.TickListener;
-import com.github.rinde.rinsim.core.model.time.TimeLapse;
-import com.github.rinde.rinsim.core.model.time.TimeModel;
 import com.github.rinde.rinsim.util.StochasticSuppliers;
 import com.google.common.collect.ImmutableSet;
+import core.model.*;
+import core.model.Model.AbstractModel;
+import core.model.ModelBuilder.AbstractModelBuilder;
+import core.model.rand.RandomModel;
+import core.model.rand.RandomProvider;
+import core.model.time.ClockController;
+import core.model.time.TickListener;
+import core.model.time.TimeLapse;
+import core.model.time.TimeModel;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.slf4j.Logger;
@@ -355,6 +353,7 @@ public final class Simulator implements SimulatorAPI {
             return new Simulator(this);
         }
     }
+
 
     abstract static class SimulatorModelBuilder extends
             AbstractModelBuilder<SimulatorModel, SimulatorUser> {

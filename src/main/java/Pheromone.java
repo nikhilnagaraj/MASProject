@@ -1,5 +1,5 @@
-import com.github.rinde.rinsim.core.model.time.TickListener;
-import com.github.rinde.rinsim.core.model.time.TimeLapse;
+import core.model.time.TickListener;
+import core.model.time.TimeLapse;
 
 public class Pheromone implements TickListener {
     private boolean evaporated;

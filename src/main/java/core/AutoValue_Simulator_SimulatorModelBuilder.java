@@ -1,5 +1,6 @@
 
-package Simulator;
+package core;
+
 
 final class AutoValue_Simulator_SimulatorModelBuilder extends Simulator.SimulatorModelBuilder {
 

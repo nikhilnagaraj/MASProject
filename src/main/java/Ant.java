@@ -18,4 +18,8 @@ public abstract class Ant{
         }
     }
 
+    public abstract IntentionPlan deployAnt();
+
+    public abstract boolean deployAnt(IntentionPlan plan);
+
 }

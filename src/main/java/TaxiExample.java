@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import com.github.rinde.rinsim.core.Simulator;
-import com.github.rinde.rinsim.core.model.pdp.*;
-import com.github.rinde.rinsim.core.model.road.RoadModel;
-import com.github.rinde.rinsim.core.model.road.RoadModelBuilders;
-import com.github.rinde.rinsim.core.model.time.TickListener;
-import com.github.rinde.rinsim.core.model.time.TimeLapse;
 import com.github.rinde.rinsim.event.Listener;
 import com.github.rinde.rinsim.geom.Graph;
 import com.github.rinde.rinsim.geom.MultiAttributeData;
 import com.github.rinde.rinsim.geom.Point;
 import com.github.rinde.rinsim.geom.io.DotGraphIO;
 import com.github.rinde.rinsim.geom.io.Filters;
-import com.github.rinde.rinsim.ui.View;
-import com.github.rinde.rinsim.ui.renderers.GraphRoadModelRenderer;
-import com.github.rinde.rinsim.ui.renderers.RoadUserRenderer;
+import core.Simulator;
+import core.model.pdp.*;
+import core.model.road.RoadModel;
+import core.model.road.RoadModelBuilders;
+import core.model.time.TickListener;
+import core.model.time.TimeLapse;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Monitor;
+import ui.View;
+import ui.renderers.GraphRoadModelRenderer;
+import ui.renderers.RoadUserRenderer;
 
 import javax.annotation.Nullable;
 import java.io.FileNotFoundException;

@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import com.github.rinde.rinsim.core.model.DependencyProvider;
-import com.github.rinde.rinsim.core.model.ModelBuilder.AbstractModelBuilder;
-import com.github.rinde.rinsim.core.model.pdp.PDPModel;
-import com.github.rinde.rinsim.core.model.pdp.PDPModel.VehicleState;
-import com.github.rinde.rinsim.core.model.road.RoadModel;
-import com.github.rinde.rinsim.core.model.road.RoadUser;
 import com.github.rinde.rinsim.geom.Point;
-import com.github.rinde.rinsim.ui.renderers.CanvasRenderer.AbstractCanvasRenderer;
-import com.github.rinde.rinsim.ui.renderers.ViewPort;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
+import core.model.DependencyProvider;
+import core.model.Model;
+import core.model.ModelBuilder.AbstractModelBuilder;
+import core.model.pdp.PDPModel;
+import core.model.pdp.PDPModel.VehicleState;
+import core.model.road.RoadModel;
+import core.model.road.RoadUser;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
+import ui.renderers.CanvasRenderer.AbstractCanvasRenderer;
+import ui.renderers.ViewPort;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +35,7 @@ import java.util.Map.Entry;
 /**
  * @author Rinde van Lon
  */
-public class TaxiRenderer extends AbstractCanvasRenderer {
+public class TaxiRenderer extends AbstractCanvasRenderer implements Model<Void> {
 
     static final int ROUND_RECT_ARC_HEIGHT = 5;
     static final int X_OFFSET = -5;

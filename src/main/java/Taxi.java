@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import com.github.rinde.rinsim.core.model.pdp.PDPModel;
-import com.github.rinde.rinsim.core.model.pdp.Parcel;
-import com.github.rinde.rinsim.core.model.pdp.Vehicle;
-import com.github.rinde.rinsim.core.model.pdp.VehicleDTO;
-import com.github.rinde.rinsim.core.model.road.MoveProgress;
-import com.github.rinde.rinsim.core.model.road.RoadModel;
-import com.github.rinde.rinsim.core.model.road.RoadModels;
-import com.github.rinde.rinsim.core.model.time.TimeLapse;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
+import core.model.pdp.PDPModel;
+import core.model.pdp.Parcel;
+import core.model.pdp.Vehicle;
+import core.model.pdp.VehicleDTO;
+import core.model.road.MoveProgress;
+import core.model.road.RoadModel;
+import core.model.road.RoadModels;
+import core.model.time.TimeLapse;
 
 /**
  * Implementation of a very simple taxi agent. It moves to the closest customer,

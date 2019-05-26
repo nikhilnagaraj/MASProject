@@ -1,5 +1,5 @@
-import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.time.TimeLapse;
+import core.model.road.MoveProgress;
 
 
 /**

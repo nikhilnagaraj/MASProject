@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package Simulator;
-
-import com.github.rinde.rinsim.core.SimulatorAPI;
-
 /**
- * An interface that declares that a given simulation entity (e.g. agent)
- * requires the ability to get access to Simulator API
- *
- * @author Bartosz Michalik
+ * This package contains the core functionality of RinSim. It contains a default
+ * simulator implementation which manages time. This package further defines
+ * several interfaces which exposes implementors to specific simulation
+ * functionality.
  */
-public interface SimulatorUser {
-    /**
-     * Through this method the user of the simulator receives a reference to the
-     * {@link SimulatorAPI}.
-     *
-     * @param api The simulator which this user gets access to.
-     */
-    void setSimulator(SimulatorAPI api);
-}
+@javax.annotation.ParametersAreNonnullByDefault
+package core;
