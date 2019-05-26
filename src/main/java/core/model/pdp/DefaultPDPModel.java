@@ -323,6 +323,65 @@ public final class DefaultPDPModel extends PDPModel {
         }
     }
 
+    @Override
+    public void removeParcel(Vehicle vehicle, Parcel parcel, TimeLapse time) {
+        synchronized (this) {
+            /* 1 */
+            checkVehicleInRoadModel(vehicle);
+            /* 2 */
+            checkVehicleIdle(vehicle);
+            /* 3 */
+            checkVehicleDoesNotContainParcel(vehicle, parcel);
+            /*4*/
+            checkArgument(
+                    timeWindowPolicy.canDeliver(parcel.getDeliveryTimeWindow(),
+                            time.getTime(), parcel.getDeliveryDuration()),
+                    "parcel removal is not allowed at this time (%s) according to the "
+                            + "time window policy: %s",
+                    time.getTime(), timeWindowPolicy);
+
+            eventDispatcher.dispatchEvent(new PDPModelEvent(
+                    PDPModelEventType.START_DELIVERY, self, time.getTime(), parcel,
+                    vehicle));
+
+            LOGGER.debug("{} {} starts removing {}", time, vehicle, parcel);
+            if (time.getTimeLeft() < parcel.getDeliveryDuration()) {
+                vehicleState.put(vehicle, VehicleState.REMOVING);
+                parcelState.put(ParcelState.REMOVING, parcel);
+                pendingVehicleActions.put(vehicle, new RemoveAction(this, vehicle,
+                        parcel, parcel.getDeliveryDuration() - time.getTimeLeft()));
+                time.consumeAll();
+            } else {
+                time.consume(parcel.getDeliveryDuration());
+                doRemove(vehicle, parcel, time.getTime());
+            }
+
+
+        }
+    }
+
+    /**
+     * The actual removal of the specified {@link Parcel} from the specified
+     * {@link Vehicle}
+     *
+     * @param vehicle
+     * @param parcel
+     * @param time
+     */
+    private void doRemove(Vehicle vehicle, Parcel parcel, long time) {
+
+        synchronized (this) {
+            containerContents.remove(vehicle, parcel);
+            containerContentsSize.put(vehicle, containerContentsSize.get(vehicle)
+                    - parcel.getNeededCapacity());
+
+            parcelState.put(ParcelState.REMOVED, parcel);
+            LOGGER.info("{} end removal of {} by {}", time, parcel, vehicle);
+            eventDispatcher.dispatchEvent(new PDPModelEvent(
+                    PDPModelEventType.END_REMOVAL, self, time, parcel, vehicle));
+        }
+    }
+
     /**
      * The actual delivery of the specified {@link Parcel} by the specified
      * {@link Vehicle}.
@@ -762,10 +821,27 @@ public final class DefaultPDPModel extends PDPModel {
             super(model, v, p, pTimeNeeded);
         }
 
+
         @Override
         public void finish(TimeLapse time) {
             modelRef.vehicleState.put(vehicle, VehicleState.IDLE);
             modelRef.doDeliver(vehicle, parcel, time.getTime());
         }
     }
+
+    static class RemoveAction extends VehicleParcelAction {
+        RemoveAction(DefaultPDPModel model, Vehicle v, Parcel p,
+                     long pTimeNeeded) {
+            super(model, v, p, pTimeNeeded);
+        }
+
+
+        @Override
+        public void finish(TimeLapse time) {
+            modelRef.vehicleState.put(vehicle, VehicleState.IDLE);
+            modelRef.doRemove(vehicle, parcel, time.getTime());
+        }
+    }
+
+
 }

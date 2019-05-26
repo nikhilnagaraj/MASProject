@@ -85,6 +85,13 @@ public class CachedGraphRoadModel extends GraphRoadModelImpl {
         classObjectMap.put(newObj.getClass(), newObj);
     }
 
+
+    @Override
+    public void objectDischarged(RoadUser object) {
+        super.objectDischarged(object);
+        classObjectMap.remove(object.getClass(), object);
+    }
+
     @Override
     public void clear() {
         super.clear();

@@ -96,6 +96,11 @@ public class ForwardingPDPModel extends PDPModel {
     }
 
     @Override
+    public void removeParcel(Vehicle vehicle, Parcel parcel, TimeLapse time) {
+        delegate.removeParcel(vehicle, parcel, time);
+    }
+
+    @Override
     public void addParcelIn(Container container, Parcel parcel) {
         delegate.addParcelIn(container, parcel);
     }

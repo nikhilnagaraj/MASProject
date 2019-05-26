@@ -282,6 +282,13 @@ public interface RoadModel extends Model<RoadUser> {
     void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj);
 
     /**
+     * Removes the specified {@link RoadUser} from this model for a temporary time period.
+     * The time penalty is set when the experiment is initialised.
+     *
+     * @param roadUser
+     */
+    void objectDischarged(RoadUser roadUser);
+    /**
      * Removes the specified {@link RoadUser} from this model.
      *
      * @param roadUser the object to be removed.

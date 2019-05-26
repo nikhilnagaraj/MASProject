@@ -124,6 +124,11 @@ public class ForwardingRoadModel<T extends GenericRoadModel>
     }
 
     @Override
+    public void objectDischarged(RoadUser object) {
+        delegate().objectDischarged(object);
+    }
+
+    @Override
     public void removeObject(RoadUser roadUser) {
         delegate().removeObject(roadUser);
     }

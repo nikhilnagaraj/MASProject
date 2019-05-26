@@ -75,7 +75,8 @@ class Taxi extends Vehicle {
                     MoveProgress moveDetails = rm.moveTo(this, curr.get().getDeliveryLocation(), time);
                     this.battery.discharge(moveDetails);
                 } else {
-                    rm.removeObject(this);
+                    removePassenger(time);
+                    rm.objectDischarged(this);
                 }
                 if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
                     // deliver when we arrive
@@ -83,13 +84,24 @@ class Taxi extends Vehicle {
                 }
             } else {
                 // it is still available, go there as fast as possible
-                MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
-                this.battery.discharge(moveDetails);
+                if (this.battery.getCurrentBatteryCapacity() > 0) {
+                    MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
+                    this.battery.discharge(moveDetails);
+                } else {
+                    removePassenger(time);
+                    rm.objectDischarged(this);
+                }
                 if (rm.equalPosition(this, curr.get())) {
                     // pickup customer
                     pm.pickup(this, curr.get(), time);
                 }
             }
+        }
+    }
+
+    public void removePassenger(TimeLapse time) {
+        if (this.curr.isPresent()) {
+            getPDPModel().removeParcel(this, curr.get(), time);
         }
     }
 }

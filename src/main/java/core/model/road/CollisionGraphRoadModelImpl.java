@@ -213,6 +213,13 @@ public class CollisionGraphRoadModelImpl
         addObjectAt(newObj, getPosition(existingObj));
     }
 
+
+    @Override
+    public void objectDischarged(RoadUser object) {
+        checkExists(object);
+        removeObject(object);
+    }
+
     @Override
     public void removeObject(RoadUser object) {
         checkExists(object);

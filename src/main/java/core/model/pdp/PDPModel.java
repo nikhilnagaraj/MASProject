@@ -226,6 +226,16 @@ public abstract class PDPModel extends AbstractModel<PDPObject>
     public abstract void deliver(Vehicle vehicle, Parcel parcel, TimeLapse time);
 
     /**
+     * This method is intended for {@link Parcel}s that have to be removed from a
+     * {@link Vehicle} before they reach their delivery location.
+     *
+     * @param vehicle The {@link Vehicle} that contains the parcel.
+     * @param parcel  The {@link Parcel} that has to be removed.
+     * @param time    The {@link TimeLapse} that is available for delivery.
+     */
+    public abstract void removeParcel(Vehicle vehicle, Parcel parcel, TimeLapse time);
+
+    /**
      * This method is intended for {@link Parcel}s that wish to add themselves to
      * either a {@link Vehicle} or a {@link Depot}.
      *
@@ -348,11 +358,18 @@ public abstract class PDPModel extends AbstractModel<PDPObject>
          * delivered.
          */
         DELIVERING(true, false, true),
-
+        /**
+         * State that indicates that the {@link Parcel} is being removed from the vehicle
+         */
+        REMOVING(true, false, false),
         /**
          * State that indicates that the {@link Parcel} has been delivered.
          */
-        DELIVERED(true, true, false);
+        DELIVERED(true, true, false),
+        /**
+         * State that indicates that the {@link Parcel} is being removed from the vehicle
+         */
+        REMOVED(true, false, false);
 
         private final boolean picked;
         private final boolean delivered;
@@ -412,7 +429,12 @@ public abstract class PDPModel extends AbstractModel<PDPObject>
          * State that indicates that the {@link Vehicle} is currently delivering a
          * {@link Parcel}.
          */
-        DELIVERING
+        DELIVERING,
+        /**
+         * State that indicates that the {@link Vehicle} is having its parcel removed.
+         * {@link Parcel}
+         */
+        REMOVING
     }
 
     /**
@@ -442,6 +464,18 @@ public abstract class PDPModel extends AbstractModel<PDPObject>
          * Indicates the end of a delivery of a {@link Parcel} by a {@link Vehicle}.
          */
         END_DELIVERY,
+
+        /**
+         * Indicates the start of a removal of a {@link Parcel} from a {@link Vehicle}.
+         */
+        START_REMOVAL,
+
+        /**
+         * Indicates the end of a removal of a {@link Parcel} from a {@link Vehicle}.
+         */
+        END_REMOVAL,
+
+
 
         /**
          * Indicates that a new {@link Parcel} has been added to the model.

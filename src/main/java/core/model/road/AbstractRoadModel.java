@@ -172,6 +172,14 @@ public abstract class AbstractRoadModel extends GenericRoadModel {
                 RoadEventType.ADD_ROAD_USER, this, newObj));
     }
 
+
+    @Override
+    public void objectDischarged(RoadUser roadUser) {
+        checkArgument(registry().containsObject(roadUser),
+                "RoadUser %s does not exist.", roadUser);
+        removeObject(roadUser);
+    }
+
     @Override
     public void removeObject(RoadUser roadUser) {
         checkArgument(registry().containsObject(roadUser),
