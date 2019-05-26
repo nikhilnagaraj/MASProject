@@ -77,6 +77,8 @@ public class TaxiRenderer extends AbstractCanvasRenderer implements Model<Void> 
                 text = lang.disembark;
             } else if (vs == VehicleState.PICKING_UP) {
                 text = lang.embark;
+            } else if (vs == VehicleState.REMOVING) {
+                text = lang.batteryDead;
             } else if (size > 0) {
                 text = Integer.toString(size);
             }
@@ -97,14 +99,16 @@ public class TaxiRenderer extends AbstractCanvasRenderer implements Model<Void> 
     }
 
     enum Language {
-        DUTCH("INSTAPPEN", "UITSTAPPEN"), ENGLISH("EMBARK", "DISEMBARK");
+        DUTCH("INSTAPPEN", "UITSTAPPEN", "BATTERIJ LEEG"), ENGLISH("EMBARK", "DISEMBARK", "BATTERY DEAD");
 
         final String embark;
         final String disembark;
+        final String batteryDead;
 
-        Language(String s1, String s2) {
+        Language(String s1, String s2, String s3) {
             embark = s1;
             disembark = s2;
+            batteryDead = s3;
         }
     }
 

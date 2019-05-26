@@ -35,6 +35,8 @@ class Taxi extends Vehicle {
     private static final double SPEED = 1000d;
     private Optional<Parcel> curr;
     private AgentBattery battery;
+    private boolean charging;
+    private double distTravelledPerTrip = 0.0;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery) {
         super(VehicleDTO.builder()
@@ -43,7 +45,22 @@ class Taxi extends Vehicle {
                 .speed(SPEED)
                 .build());
         this.battery = battery;
+        this.charging = false;
         curr = Optional.absent();
+    }
+
+    public boolean isCharging() {
+        return charging;
+    }
+
+    /**
+     * This denotes the current status of the Taxi. If true, the taxi will not be aailable to pick customers.
+     * If false, the taxi will be active.
+     *
+     * @param charging
+     */
+    public void setCharging(boolean charging) {
+        this.charging = charging;
     }
 
     @Override
@@ -52,48 +69,56 @@ class Taxi extends Vehicle {
 
     @Override
     protected void tickImpl(TimeLapse time) {
-        final RoadModel rm = getRoadModel();
-        final PDPModel pm = getPDPModel();
+        if (!charging) {
+            final RoadModel rm = getRoadModel();
+            final PDPModel pm = getPDPModel();
 
-        if (!time.hasTimeLeft()) {
-            return;
-        }
-        if (!curr.isPresent()) {
-            curr = Optional.fromNullable(RoadModels.findClosestObject(
-                    rm.getPosition(this), rm, Parcel.class));
-        }
+            if (!time.hasTimeLeft()) {
+                return;
+            }
+            if (!curr.isPresent()) {
+                curr = Optional.fromNullable(RoadModels.findClosestObject(
+                        rm.getPosition(this), rm, Parcel.class));
+            }
 
-        if (curr.isPresent()) {
-            final boolean inCargo = pm.containerContains(this, curr.get());
-            // sanity check: if it is not in our cargo AND it is also not on the
-            // RoadModel, we cannot go to curr anymore.
-            if (!inCargo && !rm.containsObject(curr.get())) {
-                curr = Optional.absent();
-            } else if (inCargo) {
-                // if it is in cargo, go to its destination
-                if (this.battery.getCurrentBatteryCapacity() > 0) {
-                    MoveProgress moveDetails = rm.moveTo(this, curr.get().getDeliveryLocation(), time);
-                    this.battery.discharge(moveDetails);
+            if (curr.isPresent()) {
+                final boolean inCargo = pm.containerContains(this, curr.get());
+                // sanity check: if it is not in our cargo AND it is also not on the
+                // RoadModel, we cannot go to curr anymore.
+                if (!inCargo && !rm.containsObject(curr.get())) {
+                    curr = Optional.absent();
+                } else if (inCargo) {
+                    // if it is in cargo, go to its destination
+                    if (this.battery.getCurrentBatteryCapacity() > 0) {
+                        MoveProgress moveDetails = rm.moveTo(this, curr.get().getDeliveryLocation(), time);
+                        distTravelledPerTrip += moveDetails.distance().getValue();
+                        System.out.println(distTravelledPerTrip);
+                        this.battery.discharge(moveDetails);
+                    } else {
+                        removePassenger(time);
+                        setCharging(true);
+                        rm.objectDischarged(this);
+                    }
+                    if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
+                        // deliver when we arrive
+                        pm.deliver(this, curr.get(), time);
+                        System.out.println(String.format("This car has travelled a distance of %f", distTravelledPerTrip));
+                    }
                 } else {
-                    removePassenger(time);
-                    rm.objectDischarged(this);
-                }
-                if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
-                    // deliver when we arrive
-                    pm.deliver(this, curr.get(), time);
-                }
-            } else {
-                // it is still available, go there as fast as possible
-                if (this.battery.getCurrentBatteryCapacity() > 0) {
-                    MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
-                    this.battery.discharge(moveDetails);
-                } else {
-                    removePassenger(time);
-                    rm.objectDischarged(this);
-                }
-                if (rm.equalPosition(this, curr.get())) {
-                    // pickup customer
-                    pm.pickup(this, curr.get(), time);
+                    // it is still available, go there as fast as possible
+                    if (this.battery.getCurrentBatteryCapacity() > 0) {
+                        MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
+                        this.battery.discharge(moveDetails);
+                    } else {
+                        removePassenger(time);
+                        setCharging(true);
+                        rm.objectDischarged(this);
+                    }
+                    if (rm.equalPosition(this, curr.get())) {
+                        // pickup customer
+                        pm.pickup(this, curr.get(), time);
+                        distTravelledPerTrip = 0.0;
+                    }
                 }
             }
         }

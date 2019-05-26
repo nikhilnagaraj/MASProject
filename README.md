@@ -10,7 +10,7 @@ This repository holds the MAS project.
 * Create Taxi Agent - Have to Modify 
   * Battery capacity and behaviour - DONE
   * Deploying ants
-  * Pick up and drop off
+  * Pick up and drop off - DONE previously
   * Drop pheromone previous pick up data / drop off data - modifiable
      The taxi drops a pheromene at its current location, the oad model is responsible for collectioin and alloting it to the appropriate region
   

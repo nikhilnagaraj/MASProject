@@ -52,8 +52,8 @@ import static com.google.common.collect.Maps.newHashMap;
 public final class TaxiExample {
 
     private static final int NUM_DEPOTS = 1;
-    private static final int NUM_TAXIS = 20;
-    private static final int NUM_CUSTOMERS = 30;
+    private static final int NUM_TAXIS = 1;
+    private static final int NUM_CUSTOMERS = 40;
 
     // time in ms
     private static final long SERVICE_DURATION = 60000;
