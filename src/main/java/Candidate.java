@@ -1,16 +1,19 @@
+import com.github.rinde.rinsim.geom.Point;
 import java.util.ArrayList;
 
-public abstract class Candidate {
-    ArrayList<Pheromone> pheromones;
+public class Candidate{
+    private PheromoneInfrastructure pheromoneInfrastructure;
+    private Point position;
+    private ArrayList<Candidate> otherCandidates; // TODO: has notion of other candidates yet
 
-    public Candidate(ArrayList<Pheromone> pheromones) {
+    public Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position) {
+        this.pheromoneInfrastructure = pheromoneInfrastructure;
+        this.position = position;
     }
 
-    public void dropPheromone(Pheromone pheromone){
-        this.pheromones.add(pheromone);
+    public PheromoneInfrastructure getPheromoneInfrastructure() {
+        return pheromoneInfrastructure;
     }
 
-    public ArrayList<Pheromone> getPheromones() {
-        return pheromones;
-    }
+    public Point getPosition() { return position; }
 }

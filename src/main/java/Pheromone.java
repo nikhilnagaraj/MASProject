@@ -1,60 +1,37 @@
-import core.model.time.TickListener;
-import core.model.time.TimeLapse;
-
-public class Pheromone implements TickListener {
+public abstract class Pheromone {
+    private String ownerId; // Id used to uniquely identify owner of pheromone TODO
     private boolean evaporated;
-    private double value;
     private long lifeTime;
-    private double decay;
 
-    public Pheromone(long lifeTime, double decay) {
+    public Pheromone(long lifeTime, String ownerId) {
         this.lifeTime = lifeTime;
+        this.ownerId = ownerId;
         this.evaporated = false;
-        this.decay = decay;
-        this.value = 1.0;
+    }
+
+    /**
+     * decrement the lifetime
+     * @return true, if pheromone should evaporate based on lifeTime; false otherwise
+     */
+    public boolean decrementLifeTime() {
+        this.lifeTime--;
+        if(this.lifeTime < 1){
+            evaporated = true;
+        }
+        return evaporated;
     }
 
     public void setLifeTime(int lifeTime) {
         this.lifeTime = lifeTime;
     }
 
-    public void setDecay(double decay) {
-        this.decay = decay;
-    }
-
     public long getLifeTime() {
         return lifeTime;
     }
 
-    public double getDecay() {
-        return this.decay;
-    }
-
-    public double getValue(){
-        return this.value;
-    }
-
     public boolean isEvaporated() {
-        return this.evaporated;
+        return evaporated;
     }
 
-    /**
-     * decrease value and lifetime of the pheromone with every timestep
-     * @param timeLapse
-     */
-    @Override
-    public void tick(TimeLapse timeLapse) {
-        if(this.lifeTime > 0) {
-            this.value *= this.decay;
-            this.lifeTime--;
-        } else {
-            this.value = 0;
-            this.evaporated = true;
-        }
-    }
-
-    @Override
-    public void afterTick(TimeLapse timeLapse) {
-
-    }
+    private String getOwnerId(){ return ownerId; }
 }

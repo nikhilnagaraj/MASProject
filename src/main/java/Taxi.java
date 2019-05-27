@@ -84,12 +84,15 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                         rm.getPosition(this), rm, Parcel.class));
 
                 if (isPickupPossible(rm, curr)) {
-                    Ant newExplorationAnt = new ExplorationAnt();
-                    Ant newIntentionAnt = new IntentionAnt();
+                    Ant newExplorationAnt = new TaxiExplorationAnt();
+                    Ant newIntentionAnt = new TaxiIntentionAnt();
+                    // TODO: Plan based on Ants reporting back;
+                    /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
                     if (newIntentionAnt.deployAnt(iPlan)) {
                         setupCharging(iPlan);
                     }
+                    */
 
                 }
             }
