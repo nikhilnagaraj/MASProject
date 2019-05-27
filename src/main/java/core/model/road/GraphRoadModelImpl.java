@@ -33,6 +33,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import static com.github.rinde.rinsim.geom.Graphs.shortestPathEuclideanDistance;
 import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
@@ -485,6 +486,11 @@ public class GraphRoadModelImpl extends AbstractRoadModel
     }
 
     @Override
+    public Set<Point> getNodesInGraph() {
+        return graph.getNodes();
+    }
+
+    @Override
     @Nonnull
     public <U> U get(Class<U> type) {
         return type.cast(self);
@@ -500,5 +506,6 @@ public class GraphRoadModelImpl extends AbstractRoadModel
     public RoadModelSnapshot getSnapshot() {
         return snapshot;
     }
+
 
 }

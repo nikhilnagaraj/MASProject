@@ -54,6 +54,7 @@ public final class TaxiExample {
     private static final int NUM_DEPOTS = 1;
     private static final int NUM_TAXIS = 1;
     private static final int NUM_CUSTOMERS = 40;
+    private static final int NUM_CHARGING_STATIONS = 90;
 
     // time in ms
     private static final long SERVICE_DURATION = 60000;
@@ -135,6 +136,9 @@ public final class TaxiExample {
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
                     TAXI_CAPACITY, newBattery));
         }
+        for (int i = 0; i < NUM_CHARGING_STATIONS; i++) {
+            simulator.register(new ChargingAgent(roadModel.getRandomPosition(rng)));
+        }
         for (int i = 0; i < NUM_CUSTOMERS; i++) {
             simulator.register(new Customer(
                     Parcel.builder(roadModel.getRandomPosition(rng),
@@ -182,6 +186,8 @@ public final class TaxiExample {
                                 TaxiBase.class, "/graphics/perspective/tall-building-64.png")
                         .withImageAssociation(
                                 Taxi.class, "/graphics/flat/taxi-32.png")
+                        .withImageAssociation(
+                                ChargingAgent.class, "/graphics/flat/warehouse-32.png")
                         .withImageAssociation(
                                 Customer.class, "/graphics/flat/person-red-32.png"))
                 .with(TaxiRenderer.builder(TaxiRenderer.Language.ENGLISH))

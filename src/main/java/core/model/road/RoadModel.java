@@ -534,4 +534,8 @@ public interface RoadModel extends Model<RoadUser> {
      */
     RoadModelSnapshot getSnapshot();
 
+    /**
+     *
+     */
+
 }

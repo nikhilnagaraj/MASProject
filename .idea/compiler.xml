@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="MASExample" />
         <module name="MASProject" />
+        <module name="MASProjectActual" />
       </profile>
     </annotationProcessing>
   </component>

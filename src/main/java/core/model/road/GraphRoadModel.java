@@ -15,11 +15,10 @@
  */
 package core.model.road;
 
-import com.github.rinde.rinsim.geom.Connection;
-import com.github.rinde.rinsim.geom.ConnectionData;
-import com.github.rinde.rinsim.geom.Graph;
-import com.github.rinde.rinsim.geom.MultiAttributeData;
+import com.github.rinde.rinsim.geom.*;
 import com.google.common.base.Optional;
+
+import java.util.Set;
 
 /**
  * A {@link RoadModel} that uses a {@link Graph} as road structure.
@@ -47,5 +46,10 @@ public interface GraphRoadModel extends RoadModel {
      * {@link Optional#absent()} otherwise.
      */
     Optional<? extends Connection<?>> getConnection(RoadUser obj);
+
+    /**
+     *
+     */
+    Set<Point> getNodesInGraph();
 
 }
