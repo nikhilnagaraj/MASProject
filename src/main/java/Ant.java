@@ -3,6 +3,9 @@ import java.util.ArrayList;
 public abstract class Ant{
     private ArrayList<Candidate> candidatePath;
 
+    public Ant() {
+    }
+
     public Ant(ArrayList<Candidate> candidatePath) {
         this.candidatePath = new ArrayList<Candidate>(candidatePath);
     }

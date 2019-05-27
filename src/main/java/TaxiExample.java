@@ -121,7 +121,7 @@ public final class TaxiExample {
                 .addModel(DefaultPDPModel.builder())
                 .addModel(view)
                 .build();
-        final RandomGenerator rng = simulator.getRandomGenerator();
+        final RandomGenerator rng = Simulator.getRandomGenerator();
 
         final RoadModel roadModel = simulator.getModelProvider().getModel(
                 RoadModel.class);
@@ -131,7 +131,7 @@ public final class TaxiExample {
                     DEPOT_CAPACITY));
         }
         for (int i = 0; i < NUM_TAXIS; i++) {
-            AgentBattery newBattery = new AgentBattery(5000, 10);
+            AgentBattery newBattery = new AgentBattery(5000, 1000);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
                     TAXI_CAPACITY, newBattery));
         }

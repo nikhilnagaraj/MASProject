@@ -16,6 +16,7 @@
 
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
+import core.Simulator;
 import core.model.pdp.PDPModel;
 import core.model.pdp.Parcel;
 import core.model.pdp.Vehicle;
@@ -31,11 +32,12 @@ import core.model.time.TimeLapse;
  *
  * @author Rinde van Lon
  */
-class Taxi extends Vehicle {
+class Taxi extends Vehicle implements BatteryTaxiInterface {
     private static final double SPEED = 1000d;
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private boolean charging;
+    private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery) {
@@ -47,6 +49,7 @@ class Taxi extends Vehicle {
         this.battery = battery;
         this.charging = false;
         curr = Optional.absent();
+        this.battery.setParentTaxi(this);
     }
 
     public boolean isCharging() {
@@ -79,6 +82,16 @@ class Taxi extends Vehicle {
             if (!curr.isPresent()) {
                 curr = Optional.fromNullable(RoadModels.findClosestObject(
                         rm.getPosition(this), rm, Parcel.class));
+
+                if (isPickupPossible(rm, curr)) {
+                    Ant newExplorationAnt = new ExplorationAnt();
+                    Ant newIntentionAnt = new IntentionAnt();
+                    IntentionPlan iPlan = newExplorationAnt.deployAnt();
+                    if (newIntentionAnt.deployAnt(iPlan)) {
+                        setupCharging(iPlan);
+                    }
+
+                }
             }
 
             if (curr.isPresent()) {
@@ -88,45 +101,97 @@ class Taxi extends Vehicle {
                 if (!inCargo && !rm.containsObject(curr.get())) {
                     curr = Optional.absent();
                 } else if (inCargo) {
-                    // if it is in cargo, go to its destination
+                    // if it is in cargo and there's juice in the battery, go to its destination
                     if (this.battery.getCurrentBatteryCapacity() > 0) {
                         MoveProgress moveDetails = rm.moveTo(this, curr.get().getDeliveryLocation(), time);
-                        distTravelledPerTrip += moveDetails.distance().getValue();
-                        System.out.println(distTravelledPerTrip);
                         this.battery.discharge(moveDetails);
+
+                        if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
+                            // deliver when we arrive
+                            pm.deliver(this, curr.get(), time);
+                        }
+
                     } else {
                         removePassenger(time);
                         setCharging(true);
+                        setupCharging();
                         rm.objectDischarged(this);
                     }
-                    if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
-                        // deliver when we arrive
-                        pm.deliver(this, curr.get(), time);
-                        System.out.println(String.format("This car has travelled a distance of %f", distTravelledPerTrip));
-                    }
+
                 } else {
                     // it is still available, go there as fast as possible
                     if (this.battery.getCurrentBatteryCapacity() > 0) {
                         MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
                         this.battery.discharge(moveDetails);
+
+                        if (rm.equalPosition(this, curr.get())) {
+                            // pickup customer
+                            pm.pickup(this, curr.get(), time);
+                            distTravelledPerTrip = 0.0;
+                        }
                     } else {
                         removePassenger(time);
                         setCharging(true);
+                        setupCharging();
                         rm.objectDischarged(this);
-                    }
-                    if (rm.equalPosition(this, curr.get())) {
-                        // pickup customer
-                        pm.pickup(this, curr.get(), time);
-                        distTravelledPerTrip = 0.0;
+
                     }
                 }
             }
+        } else {
+            battery.charge(time);
         }
     }
 
-    public void removePassenger(TimeLapse time) {
+    private boolean isPickupPossible(RoadModel rm, Optional<Parcel> curr) {
+        return this.battery.getPercentBatteryRemaining() < 10
+                || (!curr.isPresent() && !(this.battery.getPercentBatteryRemaining() > 50))
+                || rm.getDistanceOfPath(
+                rm.getShortestPathTo(rm.getPosition(this), curr.get().getPickupLocation()))
+                .getValue() > this.battery.getCurrentBatteryCapacity();
+    }
+
+
+    private void removePassenger(TimeLapse time) {
         if (this.curr.isPresent()) {
             getPDPModel().removeParcel(this, curr.get(), time);
         }
     }
+
+    /**
+     * This method sets the respawn location once a taxi has been totally discharged.
+     */
+    private void setupCharging() {
+        final RoadModel rm = getRoadModel();
+        this.chargingLocation = rm.getRandomPosition(Simulator.getRandomGenerator());
+    }
+
+    /**
+     * This method sets up charging using an approved IntentionPlan
+     *
+     * @param iPlan
+     */
+    //TODO - Setup charging and moving to the charging station
+    private void setupCharging(IntentionPlan iPlan) {
+    }
+
+    /**
+     * This method stores the location at which the taxi is currently charging.
+     *
+     * @param location Charging point location
+     */
+    private void setupCharging(Point location) {
+        this.chargingLocation = location;
+    }
+
+    @Override
+    public void batteryCharged() {
+        final RoadModel rm = getRoadModel();
+
+        this.charging = false;
+        rm.addObjectAt(this, this.chargingLocation);
+
+    }
+
+
 }

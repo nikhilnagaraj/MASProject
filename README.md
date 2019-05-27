@@ -9,7 +9,11 @@ This repository holds the MAS project.
   * The ant moves from region to region
 * Create Taxi Agent - Have to Modify 
   * Battery capacity and behaviour - DONE
-  * Deploying ants
+  * Deploying ants - DONE
+  * Charging - Basic behaviour done.
+     * The Taxi will determine its charging status and a method to put itself back on the 
+     street is required. Two variants - One variant (used when the taxi has completely discharged) puts the taxi back in the centre, another variant puts the taxi
+     back at the stop where it was charging (used for intermittent charging). - DONE 
   * Pick up and drop off - DONE previously
   * Drop pheromone previous pick up data / drop off data - modifiable
      The taxi drops a pheromene at its current location, the oad model is responsible for collectioin and alloting it to the appropriate region

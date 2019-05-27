@@ -65,8 +65,8 @@ public final class Simulator implements SimulatorAPI {
 
     private final ModelManager modelManager;
     private final ClockController clock;
-    private final RandomModel rand;
     private final Set<Object> toUnregister;
+    private static RandomModel rand;
 
     Simulator(Builder b) {
         modelManager = b.mmBuilder
@@ -230,8 +230,8 @@ public final class Simulator implements SimulatorAPI {
      *
      * @return the random generator of the simulator
      */
-    @Override
-    public RandomGenerator getRandomGenerator() {
+
+    public static RandomGenerator getRandomGenerator() {
         return rand.get(RandomProvider.class).masterInstance();
     }
 

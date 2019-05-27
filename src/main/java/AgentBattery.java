@@ -1,5 +1,5 @@
-import com.github.rinde.rinsim.core.model.time.TimeLapse;
 import core.model.road.MoveProgress;
+import core.model.time.TimeLapse;
 
 
 /**
@@ -10,6 +10,7 @@ public class AgentBattery {
     private final double totalBatteryCapacity;
     private final double rateOfCharge;
     private double currentBatteryCapacity;
+    private BatteryTaxiInterface parentTaxi;
 
     public AgentBattery(double totalBatteryCapacity, double rateOfCharge) {
         /**
@@ -22,6 +23,10 @@ public class AgentBattery {
         this.totalBatteryCapacity = totalBatteryCapacity;
         this.currentBatteryCapacity = totalBatteryCapacity;
         this.rateOfCharge = rateOfCharge;
+    }
+
+    public void setParentTaxi(BatteryTaxiInterface parentTaxi) {
+        this.parentTaxi = parentTaxi;
     }
 
     public double getTotalBatteryCapacity() {
@@ -71,6 +76,10 @@ public class AgentBattery {
          * Charges the battery in accordance with the time spent at the charging station.
          */
         this.currentBatteryCapacity += time.getTickLength() * this.rateOfCharge;
+        if (this.currentBatteryCapacity >= this.totalBatteryCapacity) {
+            this.currentBatteryCapacity = this.totalBatteryCapacity;
+            parentTaxi.batteryCharged();
+        }
     }
 
     @Override
