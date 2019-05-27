@@ -1,16 +1,11 @@
-import java.util.ArrayList;
-
 public abstract class Candidate {
-    ArrayList<Pheromone> pheromones;
+    private PheromoneInfrastructure pheromoneInfrastructure;
 
-    public Candidate(ArrayList<Pheromone> pheromones) {
+    public Candidate(PheromoneInfrastructure pheromoneInfrastructure) {
+        this.pheromoneInfrastructure = pheromoneInfrastructure;
     }
 
-    public void dropPheromone(Pheromone pheromone){
-        this.pheromones.add(pheromone);
-    }
-
-    public ArrayList<Pheromone> getPheromones() {
-        return pheromones;
+    public PheromoneInfrastructure getPheromoneInfrastructure() {
+        return pheromoneInfrastructure;
     }
 }
