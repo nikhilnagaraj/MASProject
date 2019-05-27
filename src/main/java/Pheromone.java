@@ -1,9 +1,11 @@
 public abstract class Pheromone {
+    private String ownerId; // Id used to uniquely identify owner of pheromone TODO
     private boolean evaporated;
     private long lifeTime;
 
-    public Pheromone(long lifeTime) {
+    public Pheromone(long lifeTime, String ownerId) {
         this.lifeTime = lifeTime;
+        this.ownerId = ownerId;
         this.evaporated = false;
     }
 
@@ -14,10 +16,9 @@ public abstract class Pheromone {
     public boolean decrementLifeTime() {
         this.lifeTime--;
         if(this.lifeTime < 1){
-            this.evaporated = true;
-            return true;
+            evaporated = true;
         }
-        return false;
+        return evaporated;
     }
 
     public void setLifeTime(int lifeTime) {
@@ -31,4 +32,6 @@ public abstract class Pheromone {
     public boolean isEvaporated() {
         return evaporated;
     }
+
+    private String getOwnerId(){ return ownerId; }
 }
