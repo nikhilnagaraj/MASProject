@@ -27,8 +27,8 @@ This repository holds the MAS project.
   * Charging time is modifiable - start with 'w' ticks
   * Find optimal spot
   * Ability to block an area - Ability modifiable, Radius Modifiable (Low priority)
- * Create a repairing station
-  *  A car that has died out goes there and is out of service for 'y' ticks.
+ * Create a repairing station -DONE
+  *  A car that has died out goes there and is out of service for 'y' ticks. -DONE
 * Create Ants - Ant abstraction, TODO: PheromoneInfrastructure, specific Ants
   * Exploration ant - Find the nearest vacant charging station; Poll regions for prior pick up/drop locations , find area with highest pick up/drop density.
   * Intention - Reserve that charging station; Reserve area with highest pickup density
