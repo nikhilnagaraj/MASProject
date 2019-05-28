@@ -11,9 +11,9 @@ This repository holds the MAS project.
   * Battery capacity and behaviour - DONE
   * Deploying ants - DONE
   * Charging - Basic behaviour done.
-     * The Taxi will determine its charging status and a method to put itself back on the 
+     * The Taxi will determine its taxiMode status and a method to put itself back on the 
      street is required. Two variants - One variant (used when the taxi has completely discharged) puts the taxi back in the centre, another variant puts the taxi
-     back at the stop where it was charging (used for intermittent charging). - DONE 
+     back at the stop where it was taxiMode (used for intermittent taxiMode). - DONE 
   * Pick up and drop off - DONE previously
   * Drop pheromone previous pick up data / drop off data - modifiable
      The taxi drops a pheromene at its current location, the oad model is responsible for collectioin and alloting it to the appropriate region
@@ -30,11 +30,11 @@ This repository holds the MAS project.
  * Create a repairing station -DONE
   *  A car that has died out goes there and is out of service for 'y' ticks. -DONE
 * Create Ants - Ant abstraction, TODO: PheromoneInfrastructure, specific Ants
-  * Exploration ant - Find the nearest vacant charging station; Poll regions for prior pick up/drop locations , find area with highest pick up/drop density.
-  * Intention - Reserve that charging station; Reserve area with highest pickup density
+  * Exploration ant - Find the nearest vacant taxiMode station; Poll regions for prior pick up/drop locations , find area with highest pick up/drop density.
+  * Intention - Reserve that taxiMode station; Reserve area with highest pickup density
 * Setup experimental playground
   * Central data distributor - Nearest customer.
-  * 3 charging stations
+  * 3 taxiMode stations
   * 
 * Setup Measurements
   * % accomplished trips

@@ -37,13 +37,15 @@ import java.util.UUID;
  * @author Rinde van Lon
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
-    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
-    private int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 100; // number of ticks an intention pheromone will last until it evaporates
-    private final UUID ID;
+    private static final int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
+    private static final int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 100; // number of ticks an intention pheromone will last until it evaporates
     private static final double SPEED = 1000d;
+
+    private final UUID ID;
+
     private Optional<Parcel> curr;
     private AgentBattery battery;
-    private boolean charging;
+    private TaxiMode taxiMode;
     private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
 
@@ -55,7 +57,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 .speed(SPEED)
                 .build());
         this.battery = battery;
-        this.charging = false;
+        this.taxiMode = TaxiMode.IN_SERVICE;
         this.ID = ID;
         curr = Optional.absent();
         this.battery.setParentTaxi(this);
@@ -65,18 +67,18 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         return ID;
     }
 
-    public boolean isCharging() {
-        return charging;
+    public TaxiMode getTaxiMode() {
+        return taxiMode;
     }
 
     /**
      * This denotes the current status of the Taxi. If true, the taxi will not be aailable to pick customers.
      * If false, the taxi will be active.
      *
-     * @param charging
+     * @param taxiMode
      */
-    public void setCharging(boolean charging) {
-        this.charging = charging;
+    public void setTaxiMode(TaxiMode taxiMode) {
+        this.taxiMode = taxiMode;
     }
 
     public double getExpectedChargingTime() {
@@ -89,7 +91,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
     @Override
     protected void tickImpl(TimeLapse time) {
-        if (!charging) {
+        if (!taxiMode.equals(TaxiMode.CHARGING)) {
             final RoadModel rm = getRoadModel();
             final PDPModel pm = getPDPModel();
 
@@ -100,9 +102,9 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 curr = Optional.fromNullable(RoadModels.findClosestObject(
                         rm.getPosition(this), rm, Parcel.class));
 
-                if (isPickupPossible(rm, curr)) {
-                    // Ant newExplorationAnt = new TaxiExplorationAnt();
-                    IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
+                if (isPickupNotPossible(rm, curr)) {
+                    IntentionPlan iPlan = sendExplorationAnts(battery.getPercentBatteryRemaining() / 100,
+                            rm.getPosition(this));
                     // Ant newIntentionAnt = new TaxiIntentionAnt();
                     // TODO: targetCandidateId = iPlan.getTargetNode();
                     UUID targetCandidateId = null;
@@ -136,7 +138,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
                     } else {
                         removePassenger(time);
-                        setCharging(true);
+                        setTaxiMode(TaxiMode.CHARGING);
                         setupCharging();
                         rm.objectDischarged(this);
                     }
@@ -154,7 +156,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                         }
                     } else {
                         removePassenger(time);
-                        setCharging(true);
+                        setTaxiMode(TaxiMode.CHARGING);
                         setupCharging();
                         rm.objectDischarged(this);
 
@@ -166,7 +168,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         }
     }
 
-    private boolean isPickupPossible(RoadModel rm, Optional<Parcel> curr) {
+    private boolean isPickupNotPossible(RoadModel rm, Optional<Parcel> curr) {
         return this.battery.getPercentBatteryRemaining() < 10
                 || (!curr.isPresent() && !(this.battery.getPercentBatteryRemaining() > 50))
                 || rm.getDistanceOfPath(
@@ -190,16 +192,16 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     /**
-     * This method sets up charging using an approved IntentionPlan
+     * This method sets up taxiMode using an approved IntentionPlan
      *
      * @param iPlan
      */
-    //TODO - Setup charging and moving to the charging station
+    //TODO - Setup taxiMode and moving to the taxiMode station
     private void setupCharging(IntentionPlan iPlan) {
     }
 
     /**
-     * This method stores the location at which the taxi is currently charging.
+     * This method stores the location at which the taxi is currently taxiMode.
      *
      * @param location Charging point location
      */
@@ -210,26 +212,24 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     @Override
     public void batteryCharged() {
         final RoadModel rm = getRoadModel();
-
-        this.charging = false;
         rm.addObjectAt(this, this.chargingLocation);
-
+        this.taxiMode = TaxiMode.IN_SERVICE;
     }
 
     /***
      * use this method to send exploration ants to all nodes the taxi is aware of
-     * @param curBatteryCapacity
+     * @param curBatteryPercent
      * @param curPosition
      * @return Intention plan for taxi
      */
-    private IntentionPlan sendExplorationAnts(double curBatteryCapacity, Point curPosition){
+    private IntentionPlan sendExplorationAnts(double curBatteryPercent, Point curPosition) {
         // TODO: Implement this process in a tick-based fashion in a later stage (if time allows it)
 
         Candidate candidate = getClosestCandidate();
         TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(this.ID, DEFAULT_EXPLORATION_ANT_LIFETIME,
-                curBatteryCapacity, curPosition);
+                curBatteryPercent, curPosition, this.battery.getCurrentBatteryCapacity());
         ExplorationReport report = candidate.deployTaxiExplorationAnt(explorationAnt);
-        return chooseBestIntentionPlan(report);
+        return chooseBestPlan(report);
 
         //Comment above code, uncomment this and modify the combineReport method to allow for an ant to be sent to multiple nearest nodes.
 //        HashSet<ExplorationReport> explorationReports = new HashSet<ExplorationReport>();
@@ -266,7 +266,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
      * @param explorationReport - the report discovered by the ants in this step
      * @return best intention plan that the taxi should adhere to
      */
-    private IntentionPlan chooseBestIntentionPlan(ExplorationReport explorationReport) {
+    private IntentionPlan chooseBestPlan(ExplorationReport explorationReport) {
         //TODO
         return null;
     }
@@ -286,5 +286,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         return taxi.getID().equals(this.ID);
     }
 
+    enum TaxiMode {
+        IN_SERVICE,
+        NO_SERVICE,
+        CHARGING
+    }
 
 }
