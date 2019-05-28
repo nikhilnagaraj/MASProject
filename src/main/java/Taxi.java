@@ -46,6 +46,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private double distTravelledPerTrip = 0.0;
     private Set<Candidate> otherCandidates; // denotes nodes that the taxi agent is able to send ants to
 
+    // statistics
+    private int numberOfCustomersTransported = 0;
+    private int numberOfBatteryRunOuts = 0;
+
     Taxi(Point startPosition, int capacity, AgentBattery battery) {
         super(VehicleDTO.builder()
                 .capacity(capacity)
@@ -165,6 +169,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
 
     private void removePassenger(TimeLapse time) {
+        numberOfCustomersTransported++;
         if (this.curr.isPresent()) {
             getPDPModel().removeParcel(this, curr.get(), time);
         }

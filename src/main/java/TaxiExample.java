@@ -24,6 +24,7 @@ import core.Simulator;
 import core.model.pdp.*;
 import core.model.road.RoadModel;
 import core.model.road.RoadModelBuilders;
+import core.model.road.RoadUser;
 import core.model.time.TickListener;
 import core.model.time.TimeLapse;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -76,6 +77,9 @@ public final class TaxiExample {
     private static final long TEST_STOP_TIME = 20 * 60 * 1000;
     private static final int TEST_SPEED_UP = 64;
 
+    // metrics for statistical evaluation
+    static int numberOfCustomersShowingUp;
+
     private TaxiExample() {
     }
 
@@ -86,6 +90,8 @@ public final class TaxiExample {
      *             simulation.
      */
     public static void main(@Nullable String[] args) {
+        initStatistics();
+
         final long endTime = args != null && args.length >= 1 ? Long
                 .parseLong(args[0]) : Long.MAX_VALUE;
 
@@ -181,11 +187,21 @@ public final class TaxiExample {
                                     .serviceDuration(SERVICE_DURATION)
                                     .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
                                     .buildDTO()));
+                    numberOfCustomersShowingUp++;
                 }
             }
 
             @Override
             public void afterTick(TimeLapse timeLapse) {
+                for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)){
+                    taxi.getDTO()
+                }
+                for(Customer customer : roadModel.getObjectsOfType(Customer.class)){
+                    System.out.println(customer.getDeliveryDuration());
+                    System.out.println(customer.getPickupDuration());
+                    System.out.println(customer.);
+                }
+                System.out.println(roadUsers);
             }
         });
         simulator.start();
@@ -277,6 +293,10 @@ public final class TaxiExample {
         @Override
         public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {
         }
+    }
+
+    private static void initStatistics(){
+        numberOfCustomersShowingUp = NUM_CUSTOMERS;
     }
 
 }
