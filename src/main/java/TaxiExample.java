@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -59,6 +60,7 @@ public final class TaxiExample {
     private static final int NUM_CUSTOMERS = 40;
     private static final int NUM_CHARGING_STATIONS = 4;
     private static final int NUM_CHARGING_LOCATIONS = 20;
+    private static final int NUM_WAITING_SPOTS = 3;
 
     // time in ms
     private static final long SERVICE_DURATION = 60000;
@@ -143,7 +145,7 @@ public final class TaxiExample {
         }
         for (int i = 0; i < NUM_CHARGING_LOCATIONS; i++) {
             simulator.register(new Candidate(new PheromoneInfrastructure(),
-                    roadModel.getRandomPosition(rng)));
+                    roadModel.getRandomPosition(rng), NUM_WAITING_SPOTS));
         }
 
         Set<Candidate> chargingLocationSet = roadModel.getObjectsOfType(Candidate.class);
@@ -154,7 +156,7 @@ public final class TaxiExample {
         for (int i = 0; i < NUM_TAXIS; i++) {
             AgentBattery newBattery = new AgentBattery(5000, 1000);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
-                    TAXI_CAPACITY, newBattery));
+                    TAXI_CAPACITY, newBattery, UUID.randomUUID()));
         }
 
         ArrayList<Candidate> chargingLocations = new ArrayList<Candidate>(chargingLocationSet);
@@ -193,6 +195,7 @@ public final class TaxiExample {
 
             @Override
             public void afterTick(TimeLapse timeLapse) {
+                /*
                 for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)){
                     taxi.getDTO()
                 }
@@ -202,6 +205,7 @@ public final class TaxiExample {
                     System.out.println(customer.);
                 }
                 System.out.println(roadUsers);
+                */
             }
         });
         simulator.start();

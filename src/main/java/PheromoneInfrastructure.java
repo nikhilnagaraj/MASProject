@@ -3,25 +3,26 @@ import core.model.time.TimeLapse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class PheromoneInfrastructure implements TickListener {
     /***
      * The pheromone infrastructure is deployed on candidate nodes and used by ants to interact with each other through pheromones.
      */
-    private Map<String, TaxiExplorationPheromone> taxiExplorationPheromones
-            = new HashMap<String, TaxiExplorationPheromone>();
-    private Map<String, TaxiIntentionPheromone> taxiIntentionPheromones
-            = new HashMap<String, TaxiIntentionPheromone>();
-    private Map<String, ChargeIntentionPheromone> chargeIntentionPheromones
-            = new HashMap<String, ChargeIntentionPheromone>();
+    private Map<UUID, TaxiExplorationPheromone> taxiExplorationPheromones
+            = new HashMap<UUID, TaxiExplorationPheromone>();
+    private Map<UUID, TaxiIntentionPheromone> taxiIntentionPheromones
+            = new HashMap<UUID, TaxiIntentionPheromone>();
+    private Map<UUID, ChargeIntentionPheromone> chargeIntentionPheromones
+            = new HashMap<UUID, ChargeIntentionPheromone>();
 
     /***
      * Renew the pheromone dropped by an ant that belongs to owner with given ownerId
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(String ownerId, TaxiExplorationPheromone pheromone){
-        taxiExplorationPheromones.entrySet().removeIf(entry -> (ownerId == entry.getKey()));
+    public void dropPheromone(UUID ownerId, TaxiExplorationPheromone pheromone) {
+        taxiExplorationPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
         taxiExplorationPheromones.put(ownerId,pheromone);
     }
 
@@ -30,8 +31,8 @@ public class PheromoneInfrastructure implements TickListener {
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(String ownerId, TaxiIntentionPheromone pheromone){
-        taxiIntentionPheromones.entrySet().removeIf(entry -> (ownerId == entry.getKey()));
+    public void dropPheromone(UUID ownerId, TaxiIntentionPheromone pheromone) {
+        taxiIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
         taxiIntentionPheromones.put(ownerId,pheromone);
     }
 
@@ -40,20 +41,20 @@ public class PheromoneInfrastructure implements TickListener {
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(String ownerId, ChargeIntentionPheromone pheromone){
-        chargeIntentionPheromones.entrySet().removeIf(entry -> (ownerId == entry.getKey()));
+    public void dropPheromone(UUID ownerId, ChargeIntentionPheromone pheromone) {
+        chargeIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
         chargeIntentionPheromones.put(ownerId,pheromone);
     }
 
-    public Map<String, TaxiExplorationPheromone> getTaxiExplorationPheromoneDetails() {
+    public Map<UUID, TaxiExplorationPheromone> getTaxiExplorationPheromoneDetails() {
         return this.taxiExplorationPheromones;
     }
 
-    public Map<String, TaxiIntentionPheromone> getTaxiIntentionPheromoneDetails() {
+    public Map<UUID, TaxiIntentionPheromone> getTaxiIntentionPheromoneDetails() {
         return this.taxiIntentionPheromones;
     }
 
-    public Map<String, ChargeIntentionPheromone> getChargeIntentionPheromoneDetails() {
+    public Map<UUID, ChargeIntentionPheromone> getChargeIntentionPheromoneDetails() {
         return this.chargeIntentionPheromones;
     }
 

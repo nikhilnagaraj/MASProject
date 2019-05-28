@@ -1,3 +1,5 @@
+import java.util.UUID;
+
 public class TaxiIntentionPheromone extends Pheromone {
     /**
      * TaxiIntentionAnts drop TaxiIntentionPheromones in order to reserve a Candidate
@@ -5,7 +7,7 @@ public class TaxiIntentionPheromone extends Pheromone {
      * @param ownerId originator of the Ant that dropped the intention pheromone
      */
 
-    public TaxiIntentionPheromone(long lifeTime, String ownerId) {
+    public TaxiIntentionPheromone(long lifeTime, UUID ownerId) {
         super(lifeTime, ownerId);
     }
 

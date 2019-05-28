@@ -46,10 +46,12 @@ public class ChargingAgent extends Vehicle {
             updateCanMove();
             deployAnts();
         } else {
+            /*
             rm.moveTo(this, destination, time);
             if (rm.getPosition(this).equals(destination)) {
                 chargingStationArrives();
             }
+            */
         }
     }
 
