@@ -1,10 +1,12 @@
+import java.util.UUID;
+
 public abstract class Pheromone {
-    private String ownerId; // Id used to uniquely identify owner of pheromone TODO
+    private UUID ownerId; // Id used to uniquely identify owner of pheromone TODO
     private boolean evaporated;
     private long totalLifeTime;
     private long currentLifeTime;
 
-    public Pheromone(long lifeTime, String ownerId) {
+    public Pheromone(long lifeTime, UUID ownerId) {
         this.totalLifeTime = lifeTime;
         this.ownerId = ownerId;
         this.evaporated = false;
@@ -43,7 +45,9 @@ public abstract class Pheromone {
      */
     public abstract void onDecrementLifeTime(double portionLifetimeRemaining);
 
-    private String getOwnerId(){ return ownerId; }
+    private UUID getOwnerId() {
+        return ownerId;
+    }
 
     private double portionLifetimeRemaining() {
         return ((double) this.currentLifeTime) / this.totalLifeTime;

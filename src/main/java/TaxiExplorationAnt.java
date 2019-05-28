@@ -1,18 +1,18 @@
 import com.github.rinde.rinsim.geom.Point;
 
-import java.util.HashSet;
-import java.util.Map;
+import java.util.UUID;
 
 public class TaxiExplorationAnt extends Ant {
-    private int DEFAULT_PHEROMONE_LIFETIME = 1000; // number of ticks a pheromone dropped by ant will last
-    private int ant_lifeTime; // number of nodes an ant or its replicas can travel until they die
+    private final int DEFAULT_PHEROMONE_LIFETIME = 1000; // number of ticks a pheromone dropped by ant will last
+    private int numAntGenerations; // number of nodes an ant or its replicas can travel until they die
 
     private double currentBatteryCapacity;
     private Point currentSpotOfAgent; // TODO: use Nodes instead of Point?
     private double range;
 
-    public TaxiExplorationAnt(int ant_lifeTime, double currentBatteryCapacity, Point currentSpotOfAgent){
-        this.ant_lifeTime = ant_lifeTime;
+    public TaxiExplorationAnt(UUID ID, int numAntGenerations, double currentBatteryCapacity, Point currentSpotOfAgent) {
+        super(ID);
+        this.numAntGenerations = numAntGenerations;
         this.currentBatteryCapacity = currentBatteryCapacity;
         this.currentSpotOfAgent = currentSpotOfAgent;
     }
@@ -21,8 +21,8 @@ public class TaxiExplorationAnt extends Ant {
         return DEFAULT_PHEROMONE_LIFETIME;
     }
 
-    public int getAntLifetime(){
-        return ant_lifeTime;
+    public int getNumAntGenerations() {
+        return numAntGenerations;
     }
 
     public double getCurrentBatteryCapacity(){

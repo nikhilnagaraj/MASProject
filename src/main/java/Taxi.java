@@ -26,8 +26,9 @@ import core.model.road.RoadModel;
 import core.model.road.RoadModels;
 import core.model.time.TimeLapse;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
 
 /**
  * Implementation of a very simple taxi agent. It moves to the closest customer,
@@ -36,16 +37,16 @@ import java.util.Set;
  * @author Rinde van Lon
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
-    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 2; // denotes how many nodes ants can travel sent by this taxi agent
+    private final UUID ID;
     private static final double SPEED = 1000d;
+    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private boolean charging;
     private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
-    private Set<Candidate> otherCandidates; // denotes nodes that the taxi agent is able to send ants to
 
-    Taxi(Point startPosition, int capacity, AgentBattery battery) {
+    Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
                 .capacity(capacity)
                 .startPosition(startPosition)
@@ -53,8 +54,13 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 .build());
         this.battery = battery;
         this.charging = false;
+        this.ID = ID;
         curr = Optional.absent();
         this.battery.setParentTaxi(this);
+    }
+
+    public UUID getID() {
+        return ID;
     }
 
     public boolean isCharging() {
@@ -69,6 +75,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
      */
     public void setCharging(boolean charging) {
         this.charging = charging;
+    }
+
+    public double getExpectedChargingTime() {
+        return this.battery.getExpectedChargingTime();
     }
 
     @Override
@@ -90,8 +100,8 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
                 if (isPickupPossible(rm, curr)) {
                     // Ant newExplorationAnt = new TaxiExplorationAnt();
-                    IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
-                    Ant newIntentionAnt = new TaxiIntentionAnt();
+                    //IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
+                    //Ant newIntentionAnt = new TaxiIntentionAnt();
                     /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
                     if (newIntentionAnt.deployAnt(iPlan)) {
@@ -208,26 +218,60 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
      * @return Intention plan for taxi
      */
     private IntentionPlan sendExplorationAnts(double curBatteryCapacity, Point curPosition){
-        // TODO: implement this process concurrently and tick-based in a later stage (if time allows it)
-        HashSet<IntentionPlan> intentionPlans = new HashSet<IntentionPlan>();
-        for(Candidate candidate : this.otherCandidates){
-            TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(DEFAULT_EXPLORATION_ANT_LIFETIME, curBatteryCapacity, curPosition);
-            IntentionPlan plan = candidate.deployTaxiExplorationAnt(explorationAnt);
-            intentionPlans.add(plan);
-        }
-        return chooseBestIntentionPlan(intentionPlans);
+        // TODO: Implement this process in a tick-based fashion in a later stage (if time allows it)
+
+        Candidate candidate = getClosestCandidate();
+        TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(this.ID, DEFAULT_EXPLORATION_ANT_LIFETIME,
+                curBatteryCapacity, curPosition);
+        ExplorationReport report = candidate.deployTaxiExplorationAnt(explorationAnt);
+        return chooseBestIntentionPlan(report);
+
+        //Comment above code, uncomment this and modify the combineReport method to allow for an ant to be sent to multiple nearest nodes.
+//        HashSet<ExplorationReport> explorationReports = new HashSet<ExplorationReport>();
+//        for(Candidate candidate : this.otherCandidates){
+//            TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(DEFAULT_EXPLORATION_ANT_LIFETIME, curBatteryCapacity, curPosition);
+//            ExplorationReport plan = candidate.deployTaxiExplorationAnt(explorationAnt);
+//            explorationReports.add(plan);
+//        }
+//        ExplorationReport combinedexplorationReport = combineReports(explorationReports);
+    }
+
+    private Candidate getClosestCandidate() {
+        final RoadModel rm = getRoadModel();
+        ArrayList<Candidate> allCandidates = new ArrayList<Candidate>(rm.getObjectsOfType(Candidate.class));
+
+        allCandidates.sort((Candidate c1, Candidate c2) -> (int) (rm.getDistanceOfPath(rm.getShortestPathTo(this, c1.getPosition())).getValue() - rm.getDistanceOfPath(rm.getShortestPathTo(this, c2.getPosition())).getValue()));
+        return allCandidates.get(0);
+    }
+
+    private ExplorationReport combineReports(HashSet<ExplorationReport> explorationReports) {
+        //Not used right now.
+        return null;
     }
 
     /***
      * use this method to determine the best intention plan given a hashset of intention plans
-     * @param intentionPlans - the intention plans discovered by the ants in this step
+     * @param explorationReport - the report discovered by the ants in this step
      * @return best intention plan that the taxi should adhere to
      */
-    private IntentionPlan chooseBestIntentionPlan(HashSet<IntentionPlan> intentionPlans){
-        for(IntentionPlan intentionPlan : intentionPlans){
-            // TODO
-        }
+    private IntentionPlan chooseBestIntentionPlan(ExplorationReport explorationReport) {
+        //TODO
         return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!Taxi.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        final Taxi taxi = (Taxi) obj;
+
+        return taxi.getID().equals(this.ID);
     }
 
 

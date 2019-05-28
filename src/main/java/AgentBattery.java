@@ -92,4 +92,9 @@ public class AgentBattery {
 
         return batteryInfo;
     }
+
+    public double getExpectedChargingTime() {
+
+        return (this.totalBatteryCapacity - this.currentBatteryCapacity) / this.rateOfCharge;
+    }
 }

@@ -6,11 +6,14 @@ public class ChargeExplorationAnt extends Ant {
 
     Set<CandidateData> taxiPheromoneStrengthData = new HashSet<CandidateData>();
 
+    public ChargeExplorationAnt(UUID ownerId) {
+        super(ownerId);
+    }
+
     public void smellTaxiPheromones(Candidate candidate) {
         CandidateData cData = new CandidateData(candidate, candidate.getPheromoneInfrastructure().smellTaxiExplorationPheromones());
         taxiPheromoneStrengthData.add(cData);
     }
-
 
     class CandidateData {
         Candidate candidate;

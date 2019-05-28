@@ -1,25 +1,14 @@
-import java.util.ArrayList;
+import java.util.UUID;
 
 public abstract class Ant{
-    private ArrayList<Candidate> candidatePath;
-    String ownerId;
+    private UUID ownerId;
 
-    public Ant() {
-    }
-
-    public Ant(String ownerId, ArrayList<Candidate> candidatePath) {
+    public Ant(UUID ownerId) {
         this.ownerId = ownerId;
-        this.candidatePath = new ArrayList<Candidate>(candidatePath);
     }
 
-    public String getOwnerId(){
+    public UUID getOwnerId() {
         return ownerId;
     }
-
-    // TODO
-    // public abstract IntentionPlan deployAnt();
-
-    // TODO
-    // public abstract boolean deployAnt(IntentionPlan plan);
 
 }

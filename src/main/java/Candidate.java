@@ -1,10 +1,7 @@
 import com.github.rinde.rinsim.geom.Point;
 import core.model.pdp.Depot;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Candidate extends Depot {
     private UUID uniqueID;
@@ -12,58 +9,18 @@ public class Candidate extends Depot {
     private Point position;
     private boolean chargingAgentAvailable = false;
     private Set<Candidate> otherCandidates;
+    private int waitingSpots;
+    private ArrayList<Taxi> waitingTaxis;
 
 
-    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position) {
+    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position, int waitingSpots) {
         super(position);
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
+        this.waitingSpots = waitingSpots;
         uniqueID = UUID.randomUUID();
     }
 
-    /***
-     * deploys ant at a given candidate and returns best intention plan
-     * @param ant
-     * @return best intention plan for candidate
-     */
-    public IntentionPlan deployTaxiExplorationAnt(TaxiExplorationAnt ant) {
-        visitOtherNodes(ant);
-        double strength = ant.calculateStrengthOfPheromone();
-        pheromoneInfrastructure.dropPheromone(ant.getOwnerId(), new TaxiExplorationPheromone(ant.getPheromoneLifetime(), ant.getOwnerId(), strength));
-        Map<String, TaxiIntentionPheromone> taxiIntentionPheromonesOnDeployedNode = pheromoneInfrastructure.getTaxiIntentionPheromoneDetails();
-        if(!taxiIntentionPheromonesOnDeployedNode.isEmpty() && !taxiIntentionPheromonesOnDeployedNode.containsKey(ant.getOwnerId())){
-            // another ant already reserved this node for charging --> no intentions to go there
-            return null;
-        }
-        // TODO exploration ant needs to know about charging situation on other nodes to make decision and return concrete intention plan
-        return null;
-    }
-
-    /***
-     * send replicas to other nodes to check on best intention plan
-     * @return
-     */
-    private IntentionPlan visitOtherNodes(TaxiExplorationAnt ant){
-        HashSet<IntentionPlan> intentionPlans = new HashSet<IntentionPlan>();
-        for(Candidate c : otherCandidates) {
-            TaxiExplorationAnt explorationAnt =
-                    new TaxiExplorationAnt(ant.getAntLifetime() - 1, ant.getCurrentBatteryCapacity(), ant.getCurrentSpotOfAgent());
-            intentionPlans.add(c.deployTaxiExplorationAnt(explorationAnt));
-        }
-        return chooseBestIntentionPlan(intentionPlans);
-    }
-
-    /***
-     * use this method to determine the best intention plan given a hashset of intention plans
-     * @param intentionPlans - the intention plans discovered by the ants in this step
-     * @return best intention plan that the taxi should adhere to
-     */
-    private IntentionPlan chooseBestIntentionPlan(HashSet<IntentionPlan> intentionPlans){
-        for(IntentionPlan intentionPlan : intentionPlans){
-            // TODO
-        }
-        return null;
-    }
 
     public PheromoneInfrastructure getPheromoneInfrastructure() {
         return pheromoneInfrastructure;
@@ -77,7 +34,7 @@ public class Candidate extends Depot {
         return this.uniqueID;
     }
 
-    public Set<Candidate> getOtherCandidates(){
+    public Set<Candidate> getOtherCandidates() {
         return this.otherCandidates;
     }
 
@@ -92,4 +49,117 @@ public class Candidate extends Depot {
     public void chargingAgentLeavesLocation() {
         chargingAgentAvailable = false;
     }
+
+    public void taxiJoinsWaitingQueue(Taxi taxi) {
+        waitingSpots--;
+        waitingTaxis.add(taxi);
+    }
+
+    public void taxiLeavesWaitingQueue(Taxi taxi) {
+        waitingSpots++;
+        waitingTaxis.remove(taxi);
+    }
+
+
+    /***
+     * deploys ant at a given candidate and returns best intention plan
+     * @param ant
+     * @return best intention plan for candidate
+     */
+    public ExplorationReport deployTaxiExplorationAnt(TaxiExplorationAnt ant) {
+
+        //Generate empty exploration report
+        ExplorationReport report = new ExplorationReport(ant.getOwnerId());
+
+        //Visit other neighbouring nodes if the ant is allowed to replicate.
+        if (ant.getNumAntGenerations() > 0) {
+            report.mergeReports(visitOtherNodes(ant));
+        }
+
+        //Get strength of pheromone based on battery capacity of sender and drop pheromone accordingly.
+        double strength = ant.calculateStrengthOfPheromone();
+        pheromoneInfrastructure.dropPheromone(ant.getOwnerId(), new TaxiExplorationPheromone(ant.getPheromoneLifetime(), ant.getOwnerId(), strength));
+
+        //Sniff available data on Node.
+        TaxiCandidateData taxiCandidateData = getDataForTaxiFromCandidate();
+
+        report.putReportEntry(this, taxiCandidateData);
+
+        return report;
+
+    }
+
+    /***
+     * send replicas to other nodes to check on best intention plan
+     * @return
+     */
+    private ExplorationReport visitOtherNodes(TaxiExplorationAnt ant) {
+
+        //Generate empty exploration report
+        ExplorationReport report = new ExplorationReport(ant.getOwnerId());
+
+        for(Candidate c : otherCandidates) {
+            TaxiExplorationAnt explorationAnt =
+                    new TaxiExplorationAnt(ant.getOwnerId(), ant.getNumAntGenerations() - 1,
+                            ant.getCurrentBatteryCapacity(), ant.getCurrentSpotOfAgent());
+            report.mergeReports(c.deployTaxiExplorationAnt(explorationAnt));
+        }
+        return report;
+    }
+
+    private TaxiCandidateData getDataForTaxiFromCandidate() {
+        boolean chargingAgentIntentionPresent = false;
+        double expectedWaitingTime;
+        if (chargingAgentAvailable) {
+            expectedWaitingTime = 0d;
+        } else {
+            if (!pheromoneInfrastructure.getChargeIntentionPheromoneDetails().isEmpty()) {
+                chargingAgentIntentionPresent = true;
+            }
+            expectedWaitingTime = pheromoneInfrastructure.getChargeIntentionPheromoneDetails()
+                    .values().stream().findFirst().get().getLifeTime();
+        }
+
+        boolean reservationsPresent = false;
+        boolean waitingSpotsAvailable = false;
+        Map<UUID, TaxiIntentionPheromone> taxiIntentionPheromonesOnDeployedNode
+                = pheromoneInfrastructure.getTaxiIntentionPheromoneDetails();
+        if (!taxiIntentionPheromonesOnDeployedNode.isEmpty()) {
+            reservationsPresent = true;
+            if (waitingSpots > 0) {
+                waitingSpotsAvailable = true;
+                for (Map.Entry<UUID, TaxiIntentionPheromone> entry
+                        : taxiIntentionPheromonesOnDeployedNode.entrySet()) {
+                    Optional<Taxi> retrievedTaxi = waitingTaxis.stream()
+                            .filter(taxi -> taxi.getID().equals(entry.getKey()))
+                            .findFirst();
+                    if (retrievedTaxi.isPresent()) {
+                        expectedWaitingTime += (entry.getValue().getLifeTime() +
+                                retrievedTaxi.get().getExpectedChargingTime());
+                    } else {
+                        expectedWaitingTime += entry.getValue().getLifeTime();
+                    }
+                }
+            }
+        }
+
+        TaxiCandidateData taxiCandidateData
+                = new TaxiCandidateData(chargingAgentAvailable, chargingAgentIntentionPresent,
+                reservationsPresent, waitingSpotsAvailable, expectedWaitingTime);
+
+        return taxiCandidateData;
+    }
+
+    /***
+     * use this method to determine the best intention plan given a hashset of intention plans
+     * @param intentionPlans - the intention plans discovered by the ants in this step
+     * @return best intention plan that the taxi should adhere to
+     */
+    private IntentionPlan chooseBestIntentionPlan(HashSet<IntentionPlan> intentionPlans){
+        for(IntentionPlan intentionPlan : intentionPlans){
+            // TODO
+        }
+        return null;
+    }
+
 }
