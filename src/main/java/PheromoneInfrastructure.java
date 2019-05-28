@@ -8,9 +8,12 @@ public class PheromoneInfrastructure implements TickListener {
     /***
      * The pheromone infrastructure is deployed on candidate nodes and used by ants to interact with each other through pheromones.
      */
-    private Map<String, TaxiExplorationPheromone> taxiExplorationPheromones = new HashMap<String, TaxiExplorationPheromone>();
-    private Map<String, TaxiIntentionPheromone> taxiIntentionPheromones = new HashMap<String, TaxiIntentionPheromone>();
-    private Map<String, ChargeIntentionPheromone> chargeIntentionPheromones = new HashMap<String, ChargeIntentionPheromone>();
+    private Map<String, TaxiExplorationPheromone> taxiExplorationPheromones
+            = new HashMap<String, TaxiExplorationPheromone>();
+    private Map<String, TaxiIntentionPheromone> taxiIntentionPheromones
+            = new HashMap<String, TaxiIntentionPheromone>();
+    private Map<String, ChargeIntentionPheromone> chargeIntentionPheromones
+            = new HashMap<String, ChargeIntentionPheromone>();
 
     /***
      * Renew the pheromone dropped by an ant that belongs to owner with given ownerId
