@@ -102,7 +102,7 @@ public class Candidate extends Depot {
         for(Candidate c : otherCandidates) {
             TaxiExplorationAnt explorationAnt =
                     new TaxiExplorationAnt(ant.getOwnerId(), ant.getNumAntGenerations() - 1,
-                            ant.getCurrentBatteryPercent(), ant.getCurrentSpotOfAgent());
+                            ant.getCurrentBatteryPercent(), ant.getCurrentSpotOfAgent(), ant.getRange());
             report.mergeReports(c.deployTaxiExplorationAnt(explorationAnt));
         }
         return report;

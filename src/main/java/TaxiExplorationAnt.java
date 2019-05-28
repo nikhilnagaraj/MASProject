@@ -90,4 +90,8 @@ public class TaxiExplorationAnt extends Ant {
     private double sigmoid(double x) {
         return 1 / (1 + Math.exp(-x));
     }
+
+    public double getRange() {
+        return range;
+    }
 }
