@@ -1,19 +1,35 @@
 import com.github.rinde.rinsim.geom.Point;
-import java.util.ArrayList;
+import core.model.pdp.Depot;
 
-public class Candidate{
+import java.util.Set;
+import java.util.UUID;
+
+public class Candidate extends Depot {
+    private UUID uniqueID; //TODO: A unique id to denote each candidate.
     private PheromoneInfrastructure pheromoneInfrastructure;
     private Point position;
-    private ArrayList<Candidate> otherCandidates; // TODO: has notion of other candidates yet
+    private Set<Candidate> otherCandidates;
 
-    public Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position) {
+    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position) {
+        super(position);
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
+
     }
 
     public PheromoneInfrastructure getPheromoneInfrastructure() {
         return pheromoneInfrastructure;
     }
 
-    public Point getPosition() { return position; }
+    public Point getPosition() {
+        return position;
+    }
+
+    public UUID getUniqueID() {
+        return this.uniqueID;
+    }
+
+    public void setOtherCandidates(Set<Candidate> otherCandidates) {
+        this.otherCandidates = otherCandidates;
+    }
 }

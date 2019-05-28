@@ -7,4 +7,9 @@ public class ChargeIntentionPheromone extends Pheromone {
     public ChargeIntentionPheromone(long lifeTime, String ownerId) {
         super(lifeTime, ownerId);
     }
+
+    @Override
+    public void onDecrementLifeTime(double portionLifetimeRemaining) {
+        //Do nothing
+    }
 }

@@ -1,5 +1,6 @@
 import core.model.time.TickListener;
 import core.model.time.TimeLapse;
+
 import java.util.Map;
 
 public class PheromoneInfrastructure implements TickListener {
@@ -40,16 +41,31 @@ public class PheromoneInfrastructure implements TickListener {
         chargeIntentionPheromones.put(ownerId,pheromone);
     }
 
-    public Map<String, TaxiExplorationPheromone> smellForTaxiExplorationPheromones(){
+    public Map<String, TaxiExplorationPheromone> getTaxiExplorationPheromoneDetails() {
         return this.taxiExplorationPheromones;
     }
 
-    public Map<String, TaxiIntentionPheromone> smellForTaxiIntentionPheromones(){
+    public Map<String, TaxiIntentionPheromone> getTaxiIntentionPheromoneDetails() {
         return this.taxiIntentionPheromones;
     }
 
-    public Map<String, ChargeIntentionPheromone> smellForChargeIntentionPheromones(){
+    public Map<String, ChargeIntentionPheromone> getChargeIntentionPheromoneDetails() {
         return this.chargeIntentionPheromones;
+    }
+
+    /**
+     * Used by ChargeExplorationAnts to find out the total strength of the taxi pheromones at a particular
+     * candidate.
+     *
+     * @return
+     */
+    public double smellTaxiExplorationPheromones() {
+        double totalStrength = 0.0;
+        for (TaxiExplorationPheromone pheromone : taxiExplorationPheromones.values()) {
+            totalStrength += pheromone.getStrength();
+        }
+
+        return totalStrength;
     }
 
     /***

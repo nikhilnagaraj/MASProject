@@ -8,4 +8,9 @@ public class TaxiIntentionPheromone extends Pheromone {
     public TaxiIntentionPheromone(long lifeTime, String ownerId) {
         super(lifeTime, ownerId);
     }
+
+    @Override
+    public void onDecrementLifeTime(double portionLifetimeRemaining) {
+        //Do Nothing
+    }
 }

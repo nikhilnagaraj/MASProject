@@ -19,8 +19,8 @@ public class TaxiExplorationAnt extends Ant {
      * @return
      */
     private boolean checkCandidateForIntentionPheromones(Candidate candidate){
-        return !candidate.getPheromoneInfrastructure().smellForChargeIntentionPheromones().isEmpty()
-                && !candidate.getPheromoneInfrastructure().smellForTaxiIntentionPheromones().isEmpty();
+        return !candidate.getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().isEmpty()
+                && !candidate.getPheromoneInfrastructure().getTaxiIntentionPheromoneDetails().isEmpty();
     }
 
     /***

@@ -36,7 +36,10 @@ import ui.renderers.RoadUserRenderer;
 import javax.annotation.Nullable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -54,7 +57,8 @@ public final class TaxiExample {
     private static final int NUM_DEPOTS = 1;
     private static final int NUM_TAXIS = 1;
     private static final int NUM_CUSTOMERS = 40;
-    private static final int NUM_CHARGING_STATIONS = 90;
+    private static final int NUM_CHARGING_STATIONS = 4;
+    private static final int NUM_CHARGING_LOCATIONS = 20;
 
     // time in ms
     private static final long SERVICE_DURATION = 60000;
@@ -131,14 +135,30 @@ public final class TaxiExample {
             simulator.register(new TaxiBase(roadModel.getRandomPosition(rng),
                     DEPOT_CAPACITY));
         }
+        for (int i = 0; i < NUM_CHARGING_LOCATIONS; i++) {
+            simulator.register(new Candidate(new PheromoneInfrastructure(),
+                    roadModel.getRandomPosition(rng)));
+        }
+
+        Set<Candidate> chargingLocationSet = roadModel.getObjectsOfType(Candidate.class);
+        for (Candidate candidate : chargingLocationSet) {
+            candidate.setOtherCandidates(chargingLocationSet);
+        }
+
         for (int i = 0; i < NUM_TAXIS; i++) {
             AgentBattery newBattery = new AgentBattery(5000, 1000);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
                     TAXI_CAPACITY, newBattery));
         }
+
+        ArrayList<Candidate> chargingLocations = new ArrayList<Candidate>(chargingLocationSet);
+        Random random = new Random();
         for (int i = 0; i < NUM_CHARGING_STATIONS; i++) {
-            simulator.register(new ChargingAgent(roadModel.getRandomPosition(rng)));
+            int randomSelector = random.nextInt(chargingLocations.size());
+            simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition()));
+            chargingLocations.remove(randomSelector);
         }
+
         for (int i = 0; i < NUM_CUSTOMERS; i++) {
             simulator.register(new Customer(
                     Parcel.builder(roadModel.getRandomPosition(rng),
@@ -185,11 +205,13 @@ public final class TaxiExample {
                         .withImageAssociation(
                                 TaxiBase.class, "/graphics/perspective/tall-building-64.png")
                         .withImageAssociation(
+                                Candidate.class, "/graphics/perspective/flag.png")
+                        .withImageAssociation(
                                 Taxi.class, "/graphics/flat/taxi-32.png")
                         .withImageAssociation(
                                 ChargingAgent.class, "/graphics/flat/warehouse-32.png")
                         .withImageAssociation(
-                                Customer.class, "/graphics/flat/person-red-32.png"))
+                                Customer.class, "/graphics/flat/person-blue-32.png"))
                 .with(TaxiRenderer.builder(TaxiRenderer.Language.ENGLISH))
                 .withTitleAppendix("Taxi example");
 
