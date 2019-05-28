@@ -109,15 +109,16 @@ public class Candidate extends Depot {
 
     private TaxiCandidateData getDataForTaxiFromCandidate() {
         boolean chargingAgentIntentionPresent = false;
-        double expectedWaitingTime;
+        double expectedWaitingTime = 0d;
         if (chargingAgentAvailable) {
             expectedWaitingTime = 0d;
         } else {
             if (!pheromoneInfrastructure.getChargeIntentionPheromoneDetails().isEmpty()) {
                 chargingAgentIntentionPresent = true;
+
+                expectedWaitingTime = pheromoneInfrastructure.getChargeIntentionPheromoneDetails()
+                        .values().stream().findFirst().get().getLifeTime();
             }
-            expectedWaitingTime = pheromoneInfrastructure.getChargeIntentionPheromoneDetails()
-                    .values().stream().findFirst().get().getLifeTime();
         }
 
         boolean reservationsPresent = false;
