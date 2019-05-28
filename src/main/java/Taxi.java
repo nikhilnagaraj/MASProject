@@ -37,14 +37,16 @@ import java.util.UUID;
  * @author Rinde van Lon
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
+    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
+    private int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 100; // number of ticks an intention pheromone will last until it evaporates
     private final UUID ID;
     private static final double SPEED = 1000d;
-    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private boolean charging;
     private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
+
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -100,8 +102,11 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
                 if (isPickupPossible(rm, curr)) {
                     // Ant newExplorationAnt = new TaxiExplorationAnt();
-                    //IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
-                    //Ant newIntentionAnt = new TaxiIntentionAnt();
+                    IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
+                    // Ant newIntentionAnt = new TaxiIntentionAnt();
+                    // TODO: targetCandidateId = iPlan.getTargetNode();
+                    String targetCandidateId = null;
+                    sendIntentionAnt(targetCandidateId);
                     /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
                     if (newIntentionAnt.deployAnt(iPlan)) {
@@ -247,6 +252,13 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private ExplorationReport combineReports(HashSet<ExplorationReport> explorationReports) {
         //Not used right now.
         return null;
+    }
+
+    private void sendIntentionAnt(String targetCandidateId){
+        TaxiIntentionAnt intentionAnt = new TaxiIntentionAnt(targetCandidateId, DEFAULT_INTENTION_PHEROMONE_LIFETIME);
+        for(Candidate candidate : this.otherCandidates){
+            // TODO
+        }
     }
 
     /***
