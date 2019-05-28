@@ -21,7 +21,7 @@ public class ChargingAgent extends Vehicle {
      * @param startPosition The position at which it is initially placed.
      *
      */
-    protected ChargingAgent(Point startPosition, int minTicksAtEachLocation) {
+    ChargingAgent(Point startPosition, int minTicksAtEachLocation) {
         super(VehicleDTO.builder()
                 .capacity(1)
                 .startPosition(startPosition)

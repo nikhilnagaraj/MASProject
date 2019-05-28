@@ -38,7 +38,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
@@ -153,9 +152,9 @@ public final class TaxiExample {
         }
 
         ArrayList<Candidate> chargingLocations = new ArrayList<Candidate>(chargingLocationSet);
-        Random random = new Random();
+
         for (int i = 0; i < NUM_CHARGING_STATIONS; i++) {
-            int randomSelector = random.nextInt(chargingLocations.size());
+            int randomSelector = rng.nextInt(chargingLocations.size());
             simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition(), TICKS_AT_LOCATION));
             chargingLocations.remove(randomSelector);
         }
