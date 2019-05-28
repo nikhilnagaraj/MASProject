@@ -34,6 +34,9 @@ public class ChargingAgent extends Vehicle {
     protected void tickImpl(TimeLapse time) {
 
         final RoadModel rm = getRoadModel();
+        if (currentChargingLocation == null) {
+            setCurrentChargingLocation();
+        }
         updateCanMove();
 
 
@@ -46,7 +49,7 @@ public class ChargingAgent extends Vehicle {
         canMove = currentReservations.isEmpty() && ticksAtLocation >= minTicksAtLocation;
     }
 
-    public void setCurrentChargingLocation() {
+    private void setCurrentChargingLocation() {
         ArrayList<Candidate> chargingLocationsAtSpot = new ArrayList<Candidate>(getRoadModel().getObjectsAt(this, Candidate.class));
         if (chargingLocationsAtSpot.size() > 1) {
             throw new IllegalArgumentException("Multiple charging locations at the same spot!");
