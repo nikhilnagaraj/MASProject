@@ -64,6 +64,7 @@ public final class TaxiExample {
     private static final long SERVICE_DURATION = 60000;
     private static final int TAXI_CAPACITY = 10;
     private static final int DEPOT_CAPACITY = 100;
+    private static final int TICKS_AT_LOCATION = 1000;
 
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
@@ -155,7 +156,7 @@ public final class TaxiExample {
         Random random = new Random();
         for (int i = 0; i < NUM_CHARGING_STATIONS; i++) {
             int randomSelector = random.nextInt(chargingLocations.size());
-            simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition()));
+            simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition(), TICKS_AT_LOCATION));
             chargingLocations.remove(randomSelector);
         }
 

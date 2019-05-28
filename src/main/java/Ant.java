@@ -13,7 +13,7 @@ public abstract class Ant{
         this.candidatePath = new ArrayList<Candidate>(candidatePath);
     }
 
-    // TODO: implement smart wy to replicate and decide where to send replicas
+    // TODO: implement smart way to replicate and decide where to send replicas
     // TODO: report back to Agent
     public void moveToNextCandidate() throws Exception {
         if(!this.candidatePath.isEmpty()){

@@ -5,15 +5,18 @@ import java.util.Set;
 import java.util.UUID;
 
 public class Candidate extends Depot {
-    private UUID uniqueID; //TODO: A unique id to denote each candidate.
+    private UUID uniqueID;
     private PheromoneInfrastructure pheromoneInfrastructure;
     private Point position;
+    private boolean chargingAgentAvailable = false;
     private Set<Candidate> otherCandidates;
+
 
     Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position) {
         super(position);
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
+        uniqueID = UUID.randomUUID();
 
     }
 
@@ -31,5 +34,13 @@ public class Candidate extends Depot {
 
     public void setOtherCandidates(Set<Candidate> otherCandidates) {
         this.otherCandidates = otherCandidates;
+    }
+
+    public void chargingAgentArrivesAtLocation() {
+        chargingAgentAvailable = true;
+    }
+
+    public void chargingAgentLeavesLocation() {
+        chargingAgentAvailable = false;
     }
 }
