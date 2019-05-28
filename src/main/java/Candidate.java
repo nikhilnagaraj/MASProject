@@ -32,6 +32,10 @@ public class Candidate extends Depot {
         return this.uniqueID;
     }
 
+    public Set<Candidate> getOtherCandidates(){
+        return this.otherCandidates;
+    }
+
     public void setOtherCandidates(Set<Candidate> otherCandidates) {
         this.otherCandidates = otherCandidates;
     }

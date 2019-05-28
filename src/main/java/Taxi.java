@@ -26,6 +26,9 @@ import core.model.road.RoadModel;
 import core.model.road.RoadModels;
 import core.model.time.TimeLapse;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Implementation of a very simple taxi agent. It moves to the closest customer,
  * picks it up, then delivers it, repeat.
@@ -33,12 +36,14 @@ import core.model.time.TimeLapse;
  * @author Rinde van Lon
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
+    private int DEFAULT_EXPLORATION_ANT_LIFETIME = 2; // denotes how many nodes ants can travel sent by this taxi agent
     private static final double SPEED = 1000d;
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private boolean charging;
     private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
+    private Set<Candidate> otherCandidates; // denotes nodes that the taxi agent is able to send ants to
 
     Taxi(Point startPosition, int capacity, AgentBattery battery) {
         super(VehicleDTO.builder()
@@ -84,9 +89,9 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                         rm.getPosition(this), rm, Parcel.class));
 
                 if (isPickupPossible(rm, curr)) {
-                    Ant newExplorationAnt = new TaxiExplorationAnt();
+                    // Ant newExplorationAnt = new TaxiExplorationAnt();
+                    IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
                     Ant newIntentionAnt = new TaxiIntentionAnt();
-                    // TODO: Plan based on Ants reporting back;
                     /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
                     if (newIntentionAnt.deployAnt(iPlan)) {
@@ -194,6 +199,35 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         this.charging = false;
         rm.addObjectAt(this, this.chargingLocation);
 
+    }
+
+    /***
+     * use this method to send exploration ants to all nodes the taxi is aware of
+     * @param curBatteryCapacity
+     * @param curPosition
+     * @return Intention plan for taxi
+     */
+    private IntentionPlan sendExplorationAnts(double curBatteryCapacity, Point curPosition){
+        // TODO: implement this process concurrently and tick-based in a later stage (if time allows it)
+        HashSet<IntentionPlan> intentionPlans = new HashSet<IntentionPlan>();
+        for(Candidate candidate : this.otherCandidates){
+            TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(DEFAULT_EXPLORATION_ANT_LIFETIME, curBatteryCapacity, curPosition);
+            IntentionPlan plan = explorationAnt.deployAnt(candidate);
+            intentionPlans.add(plan);
+        }
+        return chooseBestIntentionPlan(intentionPlans);
+    }
+
+    /***
+     * use this method to determine the best intention plan given a hashset of intention plans
+     * @param intentionPlans - the intention plans discovered by the ants in this step
+     * @return best intention plan that the taxi should adhere to
+     */
+    private IntentionPlan chooseBestIntentionPlan(HashSet<IntentionPlan> intentionPlans){
+        for(IntentionPlan intentionPlan : intentionPlans){
+            // TODO
+        }
+        return null;
     }
 
 
