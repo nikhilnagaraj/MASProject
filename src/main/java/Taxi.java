@@ -256,7 +256,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
     private void sendIntentionAnt(String targetCandidateId){
         TaxiIntentionAnt intentionAnt = new TaxiIntentionAnt(targetCandidateId, DEFAULT_INTENTION_PHEROMONE_LIFETIME);
-        for(Candidate candidate : this.otherCandidates){
+        for (Candidate candidate : getRoadModel().getObjectsOfType(Candidate.class)) {
             // TODO
         }
     }
