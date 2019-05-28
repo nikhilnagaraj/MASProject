@@ -163,7 +163,8 @@ public final class TaxiExample {
 
         for (int i = 0; i < NUM_CHARGING_STATIONS; i++) {
             int randomSelector = rng.nextInt(chargingLocations.size());
-            simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition(), TICKS_AT_LOCATION));
+            simulator.register(new ChargingAgent(chargingLocations.get(randomSelector).getPosition(),
+                    TICKS_AT_LOCATION, UUID.randomUUID()));
             chargingLocations.remove(randomSelector);
         }
 

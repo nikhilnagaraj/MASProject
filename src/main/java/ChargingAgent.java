@@ -4,10 +4,12 @@ import core.model.pdp.VehicleDTO;
 import core.model.road.RoadModel;
 import core.model.time.TimeLapse;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class ChargingAgent extends Vehicle {
     private static final double SPEED = 500d;
+    private static final int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 1000; // number of ticks an intention pheromone will last until it evaporates
+    private final UUID ID;
     private final int minTicksAtLocation;
 
 
@@ -25,13 +27,14 @@ public class ChargingAgent extends Vehicle {
      * @param startPosition The position at which it is initially placed.
      *
      */
-    ChargingAgent(Point startPosition, int minTicksAtEachLocation) {
+    ChargingAgent(Point startPosition, int minTicksAtEachLocation, UUID ID) {
         super(VehicleDTO.builder()
                 .capacity(1)
                 .startPosition(startPosition)
                 .speed(SPEED)
                 .build());
         minTicksAtLocation = minTicksAtEachLocation;
+        this.ID = ID;
     }
 
     @Override
@@ -72,16 +75,40 @@ public class ChargingAgent extends Vehicle {
 
     private void deployAnts() {
 
-        //TODO : Drop ant on current node.
-        //TODO : Retrieve info from ant and process data to decide where to move.
-        //TODO : Send intention Ant to said location.
+        //Drop ant on current node.
+        ChargeExplorationAnt chargeExplorationAnt = new ChargeExplorationAnt(this.ID);
+        chargeExplorationAnt.smellTaxiPheromones(currentChargingLocation);
         if (canMove) {
-            currentChargingLocation.chargingAgentLeavesLocation();
-            currentChargingLocation = null;
-            moving = true;
-            //TODO : Set destination
+            // Retrieve info from ant and process data to decide where to move.
+            Candidate bestCandidate = getBestNextLocation(chargeExplorationAnt.getTaxiPheromoneStrengthData());
+            //Send intention Ant to said location.
+            boolean success = currentChargingLocation.sendChargingIntentionAntToLocation(
+                    new ChargeIntentionAnt(this.ID, bestCandidate.getUniqueID(),
+                            calculatePheromoneLifetime(bestCandidate.getPosition())), bestCandidate);
+
+            //If successfully reserved, start motion
+            if (success) {
+                currentChargingLocation.chargingAgentLeavesLocation();
+                currentChargingLocation = null;
+                moving = true;
+                this.destination = bestCandidate.getPosition();
+            }
+
 
         }
+    }
+
+    private long calculatePheromoneLifetime(Point bestCandidatePosition) {
+        final RoadModel rm = getRoadModel();
+        double distance = rm.getDistanceOfPath(rm.getShortestPathTo(rm.getPosition(this), bestCandidatePosition)).getValue();
+
+        return (long) (distance / SPEED) * 3;
+    }
+
+    private Candidate getBestNextLocation(Set<ChargeExplorationAnt.CandidateData> taxiPheromoneStrengthData) {
+        return Collections.max(taxiPheromoneStrengthData,
+                Comparator.comparing((ChargeExplorationAnt.CandidateData cData) -> cData.getTaxiPheromoneStrength()))
+                .getCandidate();
     }
 
     private void updateCanMove() {
