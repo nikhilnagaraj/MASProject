@@ -109,15 +109,16 @@ public class Candidate extends Depot {
 
     private TaxiCandidateData getDataForTaxiFromCandidate() {
         boolean chargingAgentIntentionPresent = false;
-        double expectedWaitingTime;
+        double expectedWaitingTime = 0d;
         if (chargingAgentAvailable) {
             expectedWaitingTime = 0d;
         } else {
             if (!pheromoneInfrastructure.getChargeIntentionPheromoneDetails().isEmpty()) {
                 chargingAgentIntentionPresent = true;
+
+                expectedWaitingTime = pheromoneInfrastructure.getChargeIntentionPheromoneDetails()
+                        .values().stream().findFirst().get().getLifeTime();
             }
-            expectedWaitingTime = pheromoneInfrastructure.getChargeIntentionPheromoneDetails()
-                    .values().stream().findFirst().get().getLifeTime();
         }
 
         boolean reservationsPresent = false;
@@ -151,9 +152,17 @@ public class Candidate extends Depot {
     }
 
     public boolean sendChargingIntentionAntToLocation(ChargeIntentionAnt chargeIntentionAnt, Candidate bestCandidate) {
-        boolean success = bestCandidate.getPheromoneInfrastructure().
-                dropPheromone(chargeIntentionAnt.getOwnerId(), new ChargeIntentionPheromone(chargeIntentionAnt.getPheromoneLifetime(), chargeIntentionAnt.getOwnerId()));
 
-        return success;
+        if (!bestCandidate.getchargingAgentAvailable()) {
+            boolean success = bestCandidate.getPheromoneInfrastructure().
+                    dropPheromone(chargeIntentionAnt.getOwnerId(), new ChargeIntentionPheromone(chargeIntentionAnt.getPheromoneLifetime(), chargeIntentionAnt.getOwnerId()));
+            return success;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean getchargingAgentAvailable() {
+        return this.chargingAgentAvailable;
     }
 }
