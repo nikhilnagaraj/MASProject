@@ -212,7 +212,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         HashSet<IntentionPlan> intentionPlans = new HashSet<IntentionPlan>();
         for(Candidate candidate : this.otherCandidates){
             TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(DEFAULT_EXPLORATION_ANT_LIFETIME, curBatteryCapacity, curPosition);
-            IntentionPlan plan = explorationAnt.deployAnt(candidate);
+            IntentionPlan plan = candidate.deployTaxiExplorationAnt(explorationAnt);
             intentionPlans.add(plan);
         }
         return chooseBestIntentionPlan(intentionPlans);
