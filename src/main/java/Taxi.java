@@ -37,6 +37,7 @@ import java.util.Set;
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
     private int DEFAULT_EXPLORATION_ANT_LIFETIME = 2; // denotes how many nodes ants can travel sent by this taxi agent
+    private int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 100; // number of ticks an intention pheromone will last until it evaporates
     private static final double SPEED = 1000d;
     private Optional<Parcel> curr;
     private AgentBattery battery;
@@ -91,7 +92,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 if (isPickupPossible(rm, curr)) {
                     // Ant newExplorationAnt = new TaxiExplorationAnt();
                     IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
-                    Ant newIntentionAnt = new TaxiIntentionAnt();
+                    // Ant newIntentionAnt = new TaxiIntentionAnt();
+                    // TODO: targetCandidateId = iPlan.getTargetNode();
+                    String targetCandidateId = null;
+                    sendIntentionAnt(targetCandidateId);
                     /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
                     if (newIntentionAnt.deployAnt(iPlan)) {
@@ -216,6 +220,13 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
             intentionPlans.add(plan);
         }
         return chooseBestIntentionPlan(intentionPlans);
+    }
+
+    private void sendIntentionAnt(String targetCandidateId){
+        TaxiIntentionAnt intentionAnt = new TaxiIntentionAnt(targetCandidateId, DEFAULT_INTENTION_PHEROMONE_LIFETIME);
+        for(Candidate candidate : this.otherCandidates){
+            // TODO
+        }
     }
 
     /***
