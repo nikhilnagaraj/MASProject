@@ -41,9 +41,13 @@ public class PheromoneInfrastructure implements TickListener {
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(UUID ownerId, ChargeIntentionPheromone pheromone) {
+    public boolean dropPheromone(UUID ownerId, ChargeIntentionPheromone pheromone) {
         chargeIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
-        chargeIntentionPheromones.put(ownerId,pheromone);
+        if (chargeIntentionPheromones.isEmpty()) {
+            chargeIntentionPheromones.put(ownerId, pheromone);
+            return true;
+        }
+        return false;
     }
 
     public Map<UUID, TaxiExplorationPheromone> getTaxiExplorationPheromoneDetails() {

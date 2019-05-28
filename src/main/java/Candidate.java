@@ -62,7 +62,7 @@ public class Candidate extends Depot {
 
 
     /***
-     * deploys ant at a given candidate and returns best intention plan
+     * deploys ant at a given candidate and returns exploration report.
      * @param ant
      * @return best intention plan for candidate
      */
@@ -150,16 +150,10 @@ public class Candidate extends Depot {
         return taxiCandidateData;
     }
 
-    /***
-     * use this method to determine the best intention plan given a hashset of intention plans
-     * @param intentionPlans - the intention plans discovered by the ants in this step
-     * @return best intention plan that the taxi should adhere to
-     */
-    private IntentionPlan chooseBestIntentionPlan(HashSet<IntentionPlan> intentionPlans){
-        for(IntentionPlan intentionPlan : intentionPlans){
-            // TODO
-        }
-        return null;
-    }
+    public boolean sendChargingIntentionAntToLocation(ChargeIntentionAnt chargeIntentionAnt, Candidate bestCandidate) {
+        boolean success = bestCandidate.getPheromoneInfrastructure().
+                dropPheromone(chargeIntentionAnt.getOwnerId(), new ChargeIntentionPheromone(chargeIntentionAnt.getPheromoneLifetime(), chargeIntentionAnt.getOwnerId()));
 
+        return success;
+    }
 }
