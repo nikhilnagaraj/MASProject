@@ -105,7 +105,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                     IntentionPlan iPlan = sendExplorationAnts(battery.getCurrentBatteryCapacity(), rm.getPosition(this));
                     // Ant newIntentionAnt = new TaxiIntentionAnt();
                     // TODO: targetCandidateId = iPlan.getTargetNode();
-                    String targetCandidateId = null;
+                    UUID targetCandidateId = null;
                     sendIntentionAnt(targetCandidateId);
                     /*
                     IntentionPlan iPlan = newExplorationAnt.deployAnt();
@@ -254,8 +254,8 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         return null;
     }
 
-    private void sendIntentionAnt(String targetCandidateId){
-        TaxiIntentionAnt intentionAnt = new TaxiIntentionAnt(targetCandidateId, DEFAULT_INTENTION_PHEROMONE_LIFETIME);
+    private void sendIntentionAnt(UUID targetCandidateId) {
+        TaxiIntentionAnt intentionAnt = new TaxiIntentionAnt(this.ID, targetCandidateId, DEFAULT_INTENTION_PHEROMONE_LIFETIME);
         for (Candidate candidate : getRoadModel().getObjectsOfType(Candidate.class)) {
             // TODO
         }
