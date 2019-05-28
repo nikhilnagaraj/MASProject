@@ -151,9 +151,17 @@ public class Candidate extends Depot {
     }
 
     public boolean sendChargingIntentionAntToLocation(ChargeIntentionAnt chargeIntentionAnt, Candidate bestCandidate) {
-        boolean success = bestCandidate.getPheromoneInfrastructure().
-                dropPheromone(chargeIntentionAnt.getOwnerId(), new ChargeIntentionPheromone(chargeIntentionAnt.getPheromoneLifetime(), chargeIntentionAnt.getOwnerId()));
 
-        return success;
+        if (!bestCandidate.getchargingAgentAvailable()) {
+            boolean success = bestCandidate.getPheromoneInfrastructure().
+                    dropPheromone(chargeIntentionAnt.getOwnerId(), new ChargeIntentionPheromone(chargeIntentionAnt.getPheromoneLifetime(), chargeIntentionAnt.getOwnerId()));
+            return success;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean getchargingAgentAvailable() {
+        return this.chargingAgentAvailable;
     }
 }
