@@ -20,6 +20,7 @@ import com.github.rinde.rinsim.geom.MultiAttributeData;
 import com.github.rinde.rinsim.geom.Point;
 import com.github.rinde.rinsim.geom.io.DotGraphIO;
 import com.github.rinde.rinsim.geom.io.Filters;
+import com.opencsv.CSVWriter;
 import core.Simulator;
 import core.model.pdp.*;
 import core.model.road.RoadModel;
@@ -34,8 +35,12 @@ import ui.renderers.GraphRoadModelRenderer;
 import ui.renderers.RoadUserRenderer;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -81,6 +86,17 @@ public final class TaxiExample {
     private static final long TEST_STOP_TIME = 20 * 60 * 1000;
     private static final int TEST_SPEED_UP = 64;
 
+    // statistical evaluation
+    static String STATISTICS_PATH = "statistics/";
+    static File statisticsCSV;
+    static FileWriter outputfile;
+    static CSVWriter writer;
+    static int totalNumOfCustomersShowingUp;
+    static int totalNumOfChargings;
+    static int totalNumOfDeadBatteries;
+    static int totalNumOfCustomersDelivered;
+    static int totalNumOfCustomersPickedUp;
+
     private TaxiExample() {
     }
 
@@ -91,12 +107,21 @@ public final class TaxiExample {
      *             simulation.
      */
     public static void main(@Nullable String[] args) {
+        initStatistics(STATISTICS_PATH);
+
         final long endTime = args != null && args.length >= 1 ? Long
                 .parseLong(args[0]) : Long.MAX_VALUE;
 
         final String graphFile = args != null && args.length >= 2 ? args[1]
                 : MAP_FILE;
         run(false, endTime, graphFile, null /* new Display() */, null, null);
+
+        try {
+            writer.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -190,15 +215,38 @@ public final class TaxiExample {
                                     .serviceDuration(SERVICE_DURATION)
                                     .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
                                     .buildDTO()));
+                    totalNumOfCustomersShowingUp++;
                 }
             }
 
+            /***
+             * save statistics after tick
+             * @param timeLapse The time lapse that is handed to this object.
+             */
             @Override
             public void afterTick(TimeLapse timeLapse) {
+                totalNumOfChargings = 0;
+                totalNumOfDeadBatteries = 0;
+                totalNumOfCustomersDelivered = 0;
+                totalNumOfCustomersPickedUp = 0;
+                for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)) {
+                    totalNumOfChargings += taxi.numOfChargings;
+                    totalNumOfDeadBatteries += taxi.numOfDeadBatteries;
+                    totalNumOfCustomersDelivered += taxi.numOfCustomersDelivered;
+                    totalNumOfCustomersPickedUp += taxi.numOfCustomersPickedUp;
+                }
+                String[] data = {
+                        Long.toString(timeLapse.getTime()),
+                        Integer.toString(totalNumOfCustomersShowingUp),
+                        Integer.toString(totalNumOfChargings),
+                        Integer.toString(totalNumOfDeadBatteries),
+                        Integer.toString(totalNumOfCustomersDelivered),
+                        Integer.toString(totalNumOfCustomersPickedUp)};
+                writer.writeNext(data);
             }
         });
-        simulator.start();
 
+        simulator.start();
         return simulator;
     }
 
@@ -288,4 +336,21 @@ public final class TaxiExample {
         }
     }
 
+    private static void initStatistics(String filePath){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMHHmmss");
+        LocalDateTime now = LocalDateTime.now();
+        String filename = filePath + "stats_" + dtf.format(now) + ".csv";
+        System.out.println("Save statistics for this run in " + filename);
+        statisticsCSV = new File(filename);
+        try {
+            outputfile = new FileWriter(statisticsCSV);
+            writer = new CSVWriter(outputfile);
+            String[] header =
+                    { "Tick", "numOfCustShowUps", "numOfCharges", "numOfDeadBatteries", "numOfCustDel", "numOfCustPickUps"};
+            writer.writeNext(header);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        totalNumOfCustomersShowingUp = NUM_CUSTOMERS;
+    }
 }

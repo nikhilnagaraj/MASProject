@@ -97,10 +97,12 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
             updateCanMove();
             deployAnts();
         } else {
+            /*
             rm.moveTo(this, destination, time);
             if (rm.getPosition(this).equals(destination)) {
                 chargingStationArrives();
             }
+            */
         }
     }
 

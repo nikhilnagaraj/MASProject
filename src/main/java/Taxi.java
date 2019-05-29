@@ -59,6 +59,13 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private Candidate currentChargingLocation;
     FileHandler fh;
     private Point respawnLocation;
+    private double distTravelledPerTrip = 0.0;
+
+    // statistics
+    int numOfCustomersPickedUp = 0;
+    int numOfCustomersDelivered = 0;
+    int numOfChargings = 0;
+    int numOfDeadBatteries = 0;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -82,7 +89,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private void setupLogging() throws IOException {
-        fh = new FileHandler(String.format("C:\\Users\\nikhi\\OneDrive\\Documents\\logs\\" + this.ID.toString() + ".log"));
+        fh = new FileHandler(String.format("logs/" + this.ID.toString() + ".log"));
         logger.addHandler(fh);
         SimpleFormatter formatter = new SimpleFormatter();
         fh.setFormatter(formatter);
@@ -262,7 +269,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
             setupCharging();
             rm.objectDischarged(this);
         }
-
     }
 
     private void moveToChargingAgent(TimeLapse time, RoadModel rm) {
@@ -421,8 +427,11 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         if (!rm.containsObject(this))
             rm.addObjectAt(this, this.respawnLocation);
         this.taxiMode = TaxiMode.IN_SERVICE;
+
         this.currentChargingLocation = null;
         this.chargingLocation = null;
+        numOfChargings++;
+
     }
 
     /***
