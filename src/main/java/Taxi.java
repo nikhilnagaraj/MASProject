@@ -47,6 +47,11 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private Point chargingLocation;
     private double distTravelledPerTrip = 0.0;
 
+    // statistics
+    int numOfCustomersPickedUp = 0;
+    int numOfCustomersDelivered = 0;
+    int numOfChargings = 0;
+    int numOfDeadBatteries = 0;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -132,6 +137,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                         if (rm.getPosition(this).equals(curr.get().getDeliveryLocation())) {
                             // deliver when we arrive
                             pm.deliver(this, curr.get(), time);
+                            numOfCustomersDelivered++;
                         }
 
                     } else {
@@ -151,6 +157,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                             // pickup customer
                             pm.pickup(this, curr.get(), time);
                             distTravelledPerTrip = 0.0;
+                            numOfCustomersPickedUp++;
                         }
                     } else {
                         removePassenger(time);
@@ -167,7 +174,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private boolean isPickupPossible(RoadModel rm, Optional<Parcel> curr) {
-        System.out.println("isPickupPossible");
         return this.battery.getPercentBatteryRemaining() < 10
                 || (!curr.isPresent() && !(this.battery.getPercentBatteryRemaining() > 50))
                 || rm.getDistanceOfPath(
@@ -214,7 +220,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
         this.charging = false;
         rm.addObjectAt(this, this.chargingLocation);
-
+        numOfChargings++;
     }
 
     /***
@@ -225,8 +231,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
      */
     private IntentionPlan sendExplorationAnts(double curBatteryCapacity, Point curPosition){
         // TODO: Implement this process in a tick-based fashion in a later stage (if time allows it)
-        System.out.println("send exploration ants");
-
         Candidate candidate = getClosestCandidate();
         TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(this.ID, DEFAULT_EXPLORATION_ANT_LIFETIME,
                 curBatteryCapacity, curPosition);
