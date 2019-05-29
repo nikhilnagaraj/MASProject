@@ -295,6 +295,9 @@ public final class RoadModels {
         Set<Parcel> unallotedParcels = rm.getObjectsOfType(parcelClass).stream().filter((Parcel p) -> !p.isAlloted()).collect(Collectors.toSet());
         Parcel closestParcel = Graphs.findClosestObject(position, unallotedParcels, new RoadModels.RoadUserToPositionFunction<Parcel>(rm));
 
+        if (closestParcel == null)
+            return null;
+
         Parcel newClosestParcel = closestParcel;
         newClosestParcel.setAlloted(true);
         Point pos = rm.getPosition(closestParcel);

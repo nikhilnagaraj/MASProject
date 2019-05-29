@@ -56,7 +56,7 @@ public final class TaxiExample {
 
     private static final int NUM_DEPOTS = 1;
     private static final int NUM_TAXIS = 20;
-    private static final int NUM_CUSTOMERS = 25;
+    private static final int NUM_CUSTOMERS = 10;
     private static final int NUM_CHARGING_STATIONS = 5;
     private static final int NUM_CHARGING_LOCATIONS = 20;
     private static final int NUM_WAITING_SPOTS = 3;
@@ -72,7 +72,7 @@ public final class TaxiExample {
 
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
-    private static final double NEW_CUSTOMER_PROB = .007;
+    private static final double NEW_CUSTOMER_PROB = .0007;
 
     private static final String MAP_FILE = "/data/maps/leuven-simple.dot";
     private static final Map<String, Graph<MultiAttributeData>> GRAPH_CACHE =

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 import core.Simulator;
@@ -21,16 +22,16 @@ import core.model.pdp.PDPModel;
 import core.model.pdp.Parcel;
 import core.model.pdp.Vehicle;
 import core.model.pdp.VehicleDTO;
+import core.model.road.GraphRoadModel;
 import core.model.road.MoveProgress;
 import core.model.road.RoadModel;
 import core.model.road.RoadModels;
 import core.model.time.TimeLapse;
 
+import javax.measure.Measure;
+import javax.measure.quantity.Length;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -229,6 +230,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
         Point depotPosition = rm.getPosition(RoadModels.findClosestObject
                 (rm.getPosition(this), rm, TaxiExample.TaxiBase.class));
+        //System.out.println(String.format("Depot Position: " + depotPosition.toString()));
         if (this.battery.getCurrentBatteryCapacity() > 0) {
             MoveProgress moveDetails = rm.moveTo(this, depotPosition, time);
             this.battery.discharge(moveDetails);
@@ -344,16 +346,34 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
     private long getIntentionAntLifetime(Point bestCandidatePosition) {
         final RoadModel rm = getRoadModel();
-        double distance = rm.getDistanceOfPath(rm.getShortestPathTo(rm.getPosition(this),
-                bestCandidatePosition)).getValue();
+        double distance = getDistanceOfPath(rm, rm.getPosition(this),
+                bestCandidatePosition);
 
         return (long) ((distance / SPEED) * 3600 * 1.5);
     }
 
 
     private boolean isPickupNotPossible(RoadModel rm, Optional<Parcel> curr) {
-        return rm.getDistanceOfPath(rm.getShortestPathTo(rm.getPosition(this),
-                curr.get().getPickupLocation())).getValue() > this.battery.getCurrentBatteryCapacity();
+        return getDistanceOfPath(rm, rm.getPosition(this), curr.get().getPickupLocation()) > this.battery.getCurrentBatteryCapacity();
+
+    }
+
+    private double getDistanceOfPath(RoadModel rm, Point start, Point destination) {
+        Optional<? extends Connection<?>> conn = ((GraphRoadModel) rm).getConnection(this);
+        Point from;
+        double dist = 0;
+        if (conn.isPresent()) {
+            dist += Point.distance(start, conn.get().to());
+            from = conn.get().to();
+        } else {
+            from = getRoadModel().getPosition(this);
+        }
+
+        List<Point> path = getRoadModel().getShortestPathTo(from, destination);
+        Measure<Double, Length> distance = rm.getDistanceOfPath(path);
+        // total distance is the sum of distance and dist
+
+        return dist + distance.getValue();
     }
 
 

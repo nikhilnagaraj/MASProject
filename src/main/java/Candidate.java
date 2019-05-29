@@ -1,7 +1,11 @@
+import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Point;
 import core.model.pdp.Depot;
+import core.model.road.GraphRoadModel;
 import core.model.road.RoadModel;
 
+import javax.measure.Measure;
+import javax.measure.quantity.Length;
 import java.util.*;
 
 public class Candidate extends Depot {
@@ -186,7 +190,7 @@ public class Candidate extends Depot {
         if (this.position == targetPoint)
             return 0;
         final RoadModel rm = getRoadModel();
-        return rm.getDistanceOfPath(rm.getShortestPathTo(this.position, targetPoint)).getValue();
+        return getDistanceOfPath(rm, this.position, targetPoint);
     }
 
     public boolean deployTaxiIntentionAnt(TaxiIntentionAnt taxiIntentionAnt) {
@@ -211,5 +215,23 @@ public class Candidate extends Depot {
 
     public boolean areTaxisWaiting() {
         return waitingTaxis.size() > 0;
+    }
+
+    private double getDistanceOfPath(RoadModel rm, Point start, Point destination) {
+        com.google.common.base.Optional<? extends Connection<?>> conn = ((GraphRoadModel) rm).getConnection(this);
+        Point from;
+        double dist = 0;
+        if (conn.isPresent()) {
+            dist += Point.distance(start, conn.get().to());
+            from = conn.get().to();
+        } else {
+            from = getRoadModel().getPosition(this);
+        }
+
+        List<Point> path = getRoadModel().getShortestPathTo(from, destination);
+        Measure<Double, Length> distance = rm.getDistanceOfPath(path);
+        // total distance is the sum of distance and dist
+
+        return dist + distance.getValue();
     }
 }
