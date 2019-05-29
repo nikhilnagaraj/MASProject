@@ -55,9 +55,9 @@ import static com.google.common.collect.Maps.newHashMap;
 public final class TaxiExample {
 
     private static final int NUM_DEPOTS = 1;
-    private static final int NUM_TAXIS = 1;
-    private static final int NUM_CUSTOMERS = 40;
-    private static final int NUM_CHARGING_STATIONS = 4;
+    private static final int NUM_TAXIS = 20;
+    private static final int NUM_CUSTOMERS = 25;
+    private static final int NUM_CHARGING_STATIONS = 5;
     private static final int NUM_CHARGING_LOCATIONS = 20;
     private static final int NUM_WAITING_SPOTS = 3;
 
@@ -66,6 +66,9 @@ public final class TaxiExample {
     private static final int TAXI_CAPACITY = 10;
     private static final int DEPOT_CAPACITY = 100;
     private static final int TICKS_AT_LOCATION = 1000;
+
+    private static final int TOTAL_BATTERY_CAPACITY = 20000;
+    private static final int RATE_OF_CHARGE = 100;
 
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
@@ -148,7 +151,7 @@ public final class TaxiExample {
         }
 
         for (int i = 0; i < NUM_TAXIS; i++) {
-            AgentBattery newBattery = new AgentBattery(5000, 1000);
+            AgentBattery newBattery = new AgentBattery(TOTAL_BATTERY_CAPACITY, RATE_OF_CHARGE);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
                     TAXI_CAPACITY, newBattery, UUID.randomUUID()));
         }

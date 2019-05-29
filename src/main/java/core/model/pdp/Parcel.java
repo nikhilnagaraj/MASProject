@@ -29,10 +29,11 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * @author Rinde van Lon
  */
-public class Parcel extends PDPObjectImpl implements IParcel {
+public class Parcel extends PDPObjectImpl implements IParcel, ParcelAllotment {
 
     private final ParcelDTO dto;
     private final String string;
+    private boolean alloted;
 
     /**
      * Create a new parcel.
@@ -137,6 +138,16 @@ public class Parcel extends PDPObjectImpl implements IParcel {
     @Override
     public final TimeWindow getPickupTimeWindow() {
         return dto.getPickupTimeWindow();
+    }
+
+    @Override
+    public boolean isAlloted() {
+        return alloted;
+    }
+
+    @Override
+    public void setAlloted(boolean alloted) {
+        this.alloted = alloted;
     }
 
     /**

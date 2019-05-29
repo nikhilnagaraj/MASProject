@@ -87,6 +87,7 @@ final class AutoValue_ParcelDTO extends ParcelDTO {
         return deliveryDuration;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {

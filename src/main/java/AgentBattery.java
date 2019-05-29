@@ -75,7 +75,7 @@ public class AgentBattery {
         /**
          * Charges the battery in accordance with the time spent at the charging station.
          */
-        this.currentBatteryCapacity += time.getTickLength() * this.rateOfCharge;
+        this.currentBatteryCapacity += this.rateOfCharge;
         if (this.currentBatteryCapacity >= this.totalBatteryCapacity) {
             this.currentBatteryCapacity = this.totalBatteryCapacity;
             parentTaxi.batteryCharged();

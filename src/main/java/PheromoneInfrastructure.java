@@ -31,9 +31,10 @@ public class PheromoneInfrastructure implements TickListener {
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(UUID ownerId, TaxiIntentionPheromone pheromone) {
+    public boolean dropPheromone(UUID ownerId, TaxiIntentionPheromone pheromone) {
         taxiIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
         taxiIntentionPheromones.put(ownerId,pheromone);
+        return true;
     }
 
     /***
@@ -105,4 +106,12 @@ public class PheromoneInfrastructure implements TickListener {
 
     @Override
     public void afterTick(TimeLapse timeLapse) { }
+
+    public void removeTaxiIntentionPheromone(UUID id) {
+        taxiIntentionPheromones.remove(id);
+    }
+
+    public void removeChargingIntentionPheromone(UUID id) {
+        chargeIntentionPheromones.remove(id);
+    }
 }

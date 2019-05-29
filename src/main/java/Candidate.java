@@ -9,6 +9,7 @@ public class Candidate extends Depot {
     private PheromoneInfrastructure pheromoneInfrastructure;
     private Point position;
     private boolean chargingAgentAvailable = false;
+    private ChargingAgentTaxiInterface chargingAgent;
     private Set<Candidate> otherCandidates;
     private int waitingSpots;
     private ArrayList<Taxi> waitingTaxis;
@@ -19,6 +20,7 @@ public class Candidate extends Depot {
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
         this.waitingSpots = waitingSpots;
+        this.waitingTaxis = new ArrayList<Taxi>();
         uniqueID = UUID.randomUUID();
     }
 
@@ -43,17 +45,23 @@ public class Candidate extends Depot {
         this.otherCandidates = otherCandidates;
     }
 
-    public void chargingAgentArrivesAtLocation() {
+    public void chargingAgentArrivesAtLocation(ChargingAgentTaxiInterface chargingAgent) {
         chargingAgentAvailable = true;
+        this.chargingAgent = chargingAgent;
     }
 
     public void chargingAgentLeavesLocation() {
         chargingAgentAvailable = false;
+        this.chargingAgent = null;
     }
 
     public void taxiJoinsWaitingQueue(Taxi taxi) {
+        assert waitingSpots > 0;
+
+        pheromoneInfrastructure.removeTaxiIntentionPheromone(taxi.getID());
         waitingSpots--;
         waitingTaxis.add(taxi);
+
     }
 
     public void taxiLeavesWaitingQueue(Taxi taxi) {
@@ -61,6 +69,13 @@ public class Candidate extends Depot {
         waitingTaxis.remove(taxi);
     }
 
+    public boolean isChargingAgentAvailable() {
+        return chargingAgentAvailable;
+    }
+
+    public ChargingAgentTaxiInterface getChargingAgent() {
+        return chargingAgent;
+    }
 
     /***
      * deploys ant at a given candidate and returns exploration report.
@@ -121,15 +136,15 @@ public class Candidate extends Depot {
                         .values().stream().findFirst().get().getLifeTime();
             }
         }
-
         boolean reservationsPresent = false;
-        boolean waitingSpotsAvailable = false;
+        boolean waitingSpotsAvailable = true;
         Map<UUID, TaxiIntentionPheromone> taxiIntentionPheromonesOnDeployedNode
                 = pheromoneInfrastructure.getTaxiIntentionPheromoneDetails();
         if (!taxiIntentionPheromonesOnDeployedNode.isEmpty()) {
             reservationsPresent = true;
-            if (waitingSpots > 0) {
-                waitingSpotsAvailable = true;
+            if (waitingSpots - taxiIntentionPheromonesOnDeployedNode.size() == 0) {
+                waitingSpotsAvailable = false;
+            } else {
                 for (Map.Entry<UUID, TaxiIntentionPheromone> entry
                         : taxiIntentionPheromonesOnDeployedNode.entrySet()) {
                     Optional<Taxi> retrievedTaxi = waitingTaxis.stream()
@@ -168,7 +183,33 @@ public class Candidate extends Depot {
     }
 
     public double getDistanceFrom(Point targetPoint) {
+        if (this.position == targetPoint)
+            return 0;
         final RoadModel rm = getRoadModel();
         return rm.getDistanceOfPath(rm.getShortestPathTo(this.position, targetPoint)).getValue();
+    }
+
+    public boolean deployTaxiIntentionAnt(TaxiIntentionAnt taxiIntentionAnt) {
+
+        Candidate bestCandidate = taxiIntentionAnt.getIntentionPlan().getChosenCandidate();
+        if (bestCandidate.waitingSpots - bestCandidate.getPheromoneInfrastructure()
+                .getTaxiIntentionPheromoneDetails().size() > 0)
+            return bestCandidate.getPheromoneInfrastructure().dropPheromone(taxiIntentionAnt.getOwnerId(),
+                    new TaxiIntentionPheromone(taxiIntentionAnt.getPheromoneLifetime(), taxiIntentionAnt.getOwnerId()));
+        else
+            return false;
+
+    }
+
+    public Taxi getTaxiFromWaitingList() {
+        Taxi taxi = null;
+        if (waitingTaxis.size() > 0)
+            taxi = waitingTaxis.get(0);
+        taxiLeavesWaitingQueue(taxi);
+        return taxi;
+    }
+
+    public boolean areTaxisWaiting() {
+        return waitingTaxis.size() > 0;
     }
 }
