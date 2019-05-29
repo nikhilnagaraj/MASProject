@@ -80,6 +80,7 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
                 "ticksAtLocation: " + String.valueOf(ticksAtLocation) + "\n" +
                 "reserved: " + String.valueOf(reserved) + "\n" +
                 "canMove: " + String.valueOf(canMove) + "\n" +
+                "activeUsage" + String.valueOf(activeUsage) + "\n" +
                 "moving:  " + String.valueOf(moving)));
         final RoadModel rm = getRoadModel();
         if (!moving) {
@@ -126,6 +127,7 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
         //Drop ant on current node.
         ChargeExplorationAnt chargeExplorationAnt = new ChargeExplorationAnt(this.ID);
         chargeExplorationAnt.smellTaxiPheromones(currentChargingLocation);
+        logger.info(chargeExplorationAnt.toString());
         if (this.canMove) {
             // Retrieve info from ant and process data to decide where to move.
             Candidate bestCandidate = getBestNextLocation(chargeExplorationAnt.getTaxiPheromoneStrengthData());

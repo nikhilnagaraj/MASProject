@@ -141,8 +141,11 @@ public final class TaxiExample {
                     DEPOT_CAPACITY));
         }
         for (int i = 0; i < NUM_CHARGING_LOCATIONS; i++) {
-            simulator.register(new Candidate(new PheromoneInfrastructure(),
-                    roadModel.getRandomPosition(rng), NUM_WAITING_SPOTS));
+            UUID ID = UUID.randomUUID();
+            PheromoneInfrastructure pheromoneInfrastructure = new PheromoneInfrastructure(ID);
+            simulator.register(pheromoneInfrastructure);
+            simulator.register(new Candidate(pheromoneInfrastructure,
+                    roadModel.getRandomPosition(rng), NUM_WAITING_SPOTS, ID));
         }
 
         Set<Candidate> chargingLocationSet = roadModel.getObjectsOfType(Candidate.class);

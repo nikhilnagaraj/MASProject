@@ -15,13 +15,13 @@ public class Candidate extends Depot {
     private ArrayList<Taxi> waitingTaxis;
 
 
-    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position, int waitingSpots) {
+    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position, int waitingSpots, UUID ID) {
         super(position);
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
         this.waitingSpots = waitingSpots;
         this.waitingTaxis = new ArrayList<Taxi>();
-        uniqueID = UUID.randomUUID();
+        this.uniqueID = ID;
     }
 
 

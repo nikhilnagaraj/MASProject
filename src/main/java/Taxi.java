@@ -374,7 +374,8 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     @Override
     public void batteryCharged() {
         final RoadModel rm = getRoadModel();
-        rm.addObjectAt(this, this.respawnLocation);
+        if (!rm.containsObject(this))
+            rm.addObjectAt(this, this.respawnLocation);
         this.taxiMode = TaxiMode.IN_SERVICE;
     }
 
