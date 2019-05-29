@@ -305,6 +305,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 // pickup customer
                 pm.pickup(this, curr.get(), time);
                 sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
+                this.numOfCustomersPickedUp++;
 
             }
         } else {
@@ -386,6 +387,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private void removePassenger(TimeLapse time) {
         if (this.curr.isPresent()) {
             getPDPModel().removeParcel(this, curr.get(), time);
+            this.numOfCustomersDelivered++;
         }
     }
 
@@ -395,6 +397,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private void setupCharging() {
         final RoadModel rm = getRoadModel();
         this.respawnLocation = rm.getRandomPosition(Simulator.getRandomGenerator());
+        this.numOfDeadBatteries++;
     }
 
     @Override
@@ -403,7 +406,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         if (!rm.containsObject(this))
             rm.addObjectAt(this, this.respawnLocation);
         this.taxiMode = TaxiMode.IN_SERVICE;
-        numOfChargings++;
+        numOfChargings++; // TODO
     }
 
     /***
