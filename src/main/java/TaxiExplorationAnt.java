@@ -75,7 +75,7 @@ public class TaxiExplorationAnt extends Ant {
      * @return 1 if
      */
     private double calcRangeHeuristic(Candidate candidate){
-        return candidate.getDistanceFrom(this.getCurrentSpotOfAgent()) / range;
+        return candidate.getDistanceFrom(this.getCurrentSpotOfAgent(), Taxi.class, this.getOwnerId()) / range;
     }
 
     /***
@@ -84,7 +84,7 @@ public class TaxiExplorationAnt extends Ant {
      * @return true, if candidate in range; false otherwise
      */
     private boolean checkIfAgentInRange(Candidate candidate){
-        return (candidate.getDistanceFrom(this.getCurrentSpotOfAgent()) <= range);
+        return (candidate.getDistanceFrom(this.getCurrentSpotOfAgent(), Taxi.class, this.getOwnerId()) <= range);
     }
 
     private double sigmoid(double x) {
