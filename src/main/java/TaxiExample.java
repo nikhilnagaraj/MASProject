@@ -75,7 +75,7 @@ public final class TaxiExample {
     private static final int RATE_OF_CHARGE = 100;
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
-    private static final double NEW_CUSTOMER_PROB = .0007;
+    private static final double NEW_CUSTOMER_PROB = .005;
 
     private static final String MAP_FILE = "/data/maps/leuven-simple.dot";
     private static final Map<String, Graph<MultiAttributeData>> GRAPH_CACHE =
@@ -94,6 +94,8 @@ public final class TaxiExample {
     static int totalNumOfDeadBatteries;
     static int totalNumOfCustomersDelivered;
     static int totalNumOfCustomersPickedUp;
+    static int totalTimeOfBatteryChargedUp;
+    static int totalTimeOfChargingAgentMovement;
 
     private TaxiExample() {
     }
@@ -233,13 +235,23 @@ public final class TaxiExample {
                     if(taxi.pickedUpCustomerThisTurn)
                         totalNumOfCustomersPickedUp++;
                 }
+                for(ChargingAgent chargingAgent : roadModel.getObjectsOfType(ChargingAgent.class)){
+                    if(chargingAgent.isActiveUsage()){
+                        totalTimeOfBatteryChargedUp++;
+                    }
+                    if(chargingAgent.isMoving()){
+                        totalTimeOfChargingAgentMovement++;
+                    }
+                }
                 String[] data = {
                         Long.toString(timeLapse.getTime()),
                         Integer.toString(totalNumOfCustomersShowingUp),
                         Integer.toString(totalNumOfChargings),
                         Integer.toString(totalNumOfDeadBatteries),
                         Integer.toString(totalNumOfCustomersDelivered),
-                        Integer.toString(totalNumOfCustomersPickedUp)};
+                        Integer.toString(totalNumOfCustomersPickedUp),
+                        Integer.toString(totalTimeOfBatteryChargedUp),
+                        Integer.toString(totalTimeOfChargingAgentMovement)};
                 writer.writeNext(data);
             }
 
@@ -348,7 +360,14 @@ public final class TaxiExample {
             outputfile = new FileWriter(statisticsCSV);
             writer = new CSVWriter(outputfile);
             String[] header =
-                    { "Tick", "numOfCustShowUps", "numOfCharges", "numOfDeadBatteries", "numOfCustDel", "numOfCustPickUps"};
+                    { "Tick",
+                            "numOfCustShowUps",
+                            "numOfCharges",
+                            "numOfDeadBatteries",
+                            "numOfCustDel",
+                            "numOfCustPickUps",
+                            "timeForCharging",
+                            "timeBatteryStationMoving"};
             writer.writeNext(header);
         } catch (IOException e) {
             e.printStackTrace();

@@ -202,4 +202,8 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
 
         return dist + distance.getValue();
     }
+
+    public boolean isMoving(){
+        return moving;
+    }
 }
