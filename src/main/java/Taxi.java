@@ -50,7 +50,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private static final double SPEED = 1000d;
 
     private final UUID ID;
-
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private TaxiMode taxiMode;
@@ -66,6 +65,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     int numOfCustomersDelivered = 0;
     int numOfChargings = 0;
     int numOfDeadBatteries = 0;
+    public boolean startedToChargeThisTurn;
+    public boolean pickedUpCustomerThisTurn;
+    public boolean batteryDiedThisTurn;
+    public boolean customerDeliveredThisTurn;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -127,6 +130,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         final RoadModel rm = getRoadModel();
         final PDPModel pm = getPDPModel();
 
+        startedToChargeThisTurn = false;
+        pickedUpCustomerThisTurn = false;
+        batteryDiedThisTurn = false;
+        customerDeliveredThisTurn = false;
 
         logger.info(String.format("Battery remaining before tick: " +
                 String.valueOf(this.battery.getPercentBatteryRemaining())));
@@ -288,6 +295,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 if (candidate.isChargingAgentAvailable()) {
                     if (!candidate.getChargingAgent().isActiveUsage()) {
                         candidate.getChargingAgent().setActiveUsage(true);
+                        this.startedToChargeThisTurn = true; // TODO
                         this.taxiMode = TaxiMode.CHARGING;
                         this.respawnLocation = this.chargingLocation;
                         rm.removeObject(this);
@@ -328,6 +336,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 pm.pickup(this, curr.get(), time);
                 sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
                 this.numOfCustomersPickedUp++;
+                this.pickedUpCustomerThisTurn = true;
 
             }
         } else {
@@ -410,6 +419,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         if (this.curr.isPresent()) {
             getPDPModel().removeParcel(this, curr.get(), time);
             this.numOfCustomersDelivered++;
+            this.customerDeliveredThisTurn = true;
         }
     }
 
@@ -420,6 +430,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         final RoadModel rm = getRoadModel();
         this.respawnLocation = rm.getRandomPosition(Simulator.getRandomGenerator());
         this.numOfDeadBatteries++;
+        this.batteryDiedThisTurn = true;
     }
 
     @Override

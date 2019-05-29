@@ -71,10 +71,8 @@ public final class TaxiExample {
     private static final int TAXI_CAPACITY = 10;
     private static final int DEPOT_CAPACITY = 100;
     private static final int TICKS_AT_LOCATION = 1000;
-
     private static final int TOTAL_BATTERY_CAPACITY = 20000;
     private static final int RATE_OF_CHARGE = 100;
-
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
     private static final double NEW_CUSTOMER_PROB = .0007;
@@ -225,15 +223,15 @@ public final class TaxiExample {
              */
             @Override
             public void afterTick(TimeLapse timeLapse) {
-                totalNumOfChargings = 0;
-                totalNumOfDeadBatteries = 0;
-                totalNumOfCustomersDelivered = 0;
-                totalNumOfCustomersPickedUp = 0;
                 for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)) {
-                    totalNumOfChargings += taxi.numOfChargings;
-                    totalNumOfDeadBatteries += taxi.numOfDeadBatteries;
-                    totalNumOfCustomersDelivered += taxi.numOfCustomersDelivered;
-                    totalNumOfCustomersPickedUp += taxi.numOfCustomersPickedUp;
+                    if(taxi.startedToChargeThisTurn)
+                        totalNumOfChargings++;
+                    if(taxi.batteryDiedThisTurn)
+                        totalNumOfDeadBatteries++;
+                    if(taxi.customerDeliveredThisTurn)
+                        totalNumOfCustomersDelivered++;
+                    if(taxi.pickedUpCustomerThisTurn)
+                        totalNumOfCustomersPickedUp++;
                 }
                 String[] data = {
                         Long.toString(timeLapse.getTime()),
@@ -244,7 +242,11 @@ public final class TaxiExample {
                         Integer.toString(totalNumOfCustomersPickedUp)};
                 writer.writeNext(data);
             }
+
+
         });
+
+
 
         simulator.start();
         return simulator;
