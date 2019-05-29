@@ -61,14 +61,15 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private double distTravelledPerTrip = 0.0;
 
     // statistics
-    int numOfCustomersPickedUp = 0;
-    int numOfCustomersDelivered = 0;
-    int numOfChargings = 0;
-    int numOfDeadBatteries = 0;
+    static int numOfCustomersPickedUp = 0;
+    static int numOfChargings = 0;
+    static int numOfDeadBatteries = 0;
     public boolean startedToChargeThisTurn;
     public boolean pickedUpCustomerThisTurn;
     public boolean batteryDiedThisTurn;
-    public boolean customerDeliveredThisTurn;
+    static int distanceTravelledToDepot;
+    static int distanceTravelledToChargingAgent;
+    static int distanceTravelledToCustomer;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -133,7 +134,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         startedToChargeThisTurn = false;
         pickedUpCustomerThisTurn = false;
         batteryDiedThisTurn = false;
-        customerDeliveredThisTurn = false;
 
         logger.info(String.format("Battery remaining before tick: " +
                 String.valueOf(this.battery.getPercentBatteryRemaining())));
@@ -258,12 +258,12 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private void moveToDepot(TimeLapse time, RoadModel rm) {
-
         Point depotPosition = rm.getPosition(RoadModels.findClosestObject
                 (rm.getPosition(this), rm, TaxiExample.TaxiBase.class));
         //System.out.println(String.format("Depot Position: " + depotPosition.toString()));
         if (this.battery.getCurrentBatteryCapacity() > 0) {
             MoveProgress moveDetails = rm.moveTo(this, depotPosition, time);
+            distanceTravelledToDepot++;
             this.battery.discharge(moveDetails);
 
             if (rm.getPosition(this).equals(depotPosition)) {
@@ -279,7 +279,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private void moveToChargingAgent(TimeLapse time, RoadModel rm) {
-
+        distanceTravelledToChargingAgent++;
         if (this.battery.getCurrentBatteryCapacity() > 0) {
             MoveProgress moveDetails = rm.moveTo(this, chargingLocation, time);
             this.battery.discharge(moveDetails);
@@ -328,6 +328,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
     private void moveToPickUpParcel(TimeLapse time, RoadModel rm, PDPModel pm) {
         if (this.battery.getCurrentBatteryCapacity() > 0) {
+            distanceTravelledToCustomer++;
             MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
             this.battery.discharge(moveDetails);
 
@@ -418,8 +419,6 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private void removePassenger(TimeLapse time) {
         if (this.curr.isPresent()) {
             getPDPModel().removeParcel(this, curr.get(), time);
-            this.numOfCustomersDelivered++;
-            this.customerDeliveredThisTurn = true;
         }
     }
 

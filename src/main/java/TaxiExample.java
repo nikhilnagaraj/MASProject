@@ -230,8 +230,6 @@ public final class TaxiExample {
                         totalNumOfChargings++;
                     if(taxi.batteryDiedThisTurn)
                         totalNumOfDeadBatteries++;
-                    if(taxi.customerDeliveredThisTurn)
-                        totalNumOfCustomersDelivered++;
                     if(taxi.pickedUpCustomerThisTurn)
                         totalNumOfCustomersPickedUp++;
                 }
@@ -248,10 +246,12 @@ public final class TaxiExample {
                         Integer.toString(totalNumOfCustomersShowingUp),
                         Integer.toString(totalNumOfChargings),
                         Integer.toString(totalNumOfDeadBatteries),
-                        Integer.toString(totalNumOfCustomersDelivered),
                         Integer.toString(totalNumOfCustomersPickedUp),
                         Integer.toString(totalTimeOfBatteryChargedUp),
-                        Integer.toString(totalTimeOfChargingAgentMovement)};
+                        Integer.toString(totalTimeOfChargingAgentMovement),
+                        Integer.toString(Taxi.distanceTravelledToDepot),
+                        Integer.toString(Taxi.distanceTravelledToChargingAgent),
+                        Integer.toString(Taxi.distanceTravelledToCustomer)};
                 writer.writeNext(data);
             }
 
@@ -364,10 +364,12 @@ public final class TaxiExample {
                             "numOfCustShowUps",
                             "numOfCharges",
                             "numOfDeadBatteries",
-                            "numOfCustDel",
                             "numOfCustPickUps",
                             "timeForCharging",
-                            "timeBatteryStationMoving"};
+                            "timeBatteryStationMoving",
+                            "distanceTravelledToDepot",
+                            "distanceTravelledToChargingAgent",
+                            "distanceTravelledToCustomer"};
             writer.writeNext(header);
         } catch (IOException e) {
             e.printStackTrace();
