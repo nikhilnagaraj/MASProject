@@ -1,5 +1,6 @@
 import com.github.rinde.rinsim.geom.Point;
 import core.model.pdp.Depot;
+import core.model.road.RoadModel;
 
 import java.util.*;
 
@@ -77,7 +78,7 @@ public class Candidate extends Depot {
         }
 
         //Get strength of pheromone based on battery capacity of sender and drop pheromone accordingly.
-        double strength = ant.calculateStrengthOfPheromone();
+        double strength = ant.calculateStrengthOfPheromone(this);
         pheromoneInfrastructure.dropPheromone(ant.getOwnerId(), new TaxiExplorationPheromone(ant.getPheromoneLifetime(), ant.getOwnerId(), strength));
 
         //Sniff available data on Node.
@@ -101,7 +102,7 @@ public class Candidate extends Depot {
         for(Candidate c : otherCandidates) {
             TaxiExplorationAnt explorationAnt =
                     new TaxiExplorationAnt(ant.getOwnerId(), ant.getNumAntGenerations() - 1,
-                            ant.getCurrentBatteryCapacity(), ant.getCurrentSpotOfAgent());
+                            ant.getCurrentBatteryPercent(), ant.getCurrentSpotOfAgent(), ant.getRange());
             report.mergeReports(c.deployTaxiExplorationAnt(explorationAnt));
         }
         return report;
@@ -164,5 +165,10 @@ public class Candidate extends Depot {
 
     private boolean getchargingAgentAvailable() {
         return this.chargingAgentAvailable;
+    }
+
+    public double getDistanceFrom(Point targetPoint) {
+        final RoadModel rm = getRoadModel();
+        return rm.getDistanceOfPath(rm.getShortestPathTo(this.position, targetPoint)).getValue();
     }
 }
