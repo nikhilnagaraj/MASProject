@@ -56,6 +56,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private TaxiMode taxiMode;
     Logger logger;
     private Point chargingLocation;
+    private Candidate currentChargingLocation;
     FileHandler fh;
     private Point respawnLocation;
     private double distTravelledPerTrip = 0.0;
@@ -148,7 +149,23 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
             taxiInService(rm, time, pm);
         } else if (this.taxiMode == TaxiMode.NO_SERVICE) {
             taxiOutOfService(rm, time, pm);
-        }
+        } else if (this.taxiMode == TaxiMode.AWAITING_CHARGE)
+            taxiAwaitingCharge(rm, time, pm);
+    }
+
+    private void taxiAwaitingCharge(RoadModel rm, TimeLapse time, PDPModel pm) {
+        if (currentChargingLocation != null) {
+            int chargingPheromoneDetails = currentChargingLocation.
+                    getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().size();
+            if (chargingPheromoneDetails != 1) {
+                this.taxiMode = TaxiMode.NO_SERVICE;
+                currentChargingLocation = null;
+                chargingLocation = null;
+                if (!rm.containsObject(this))
+                    rm.addObjectAt(this, this.respawnLocation);
+            }
+        } else
+            throw new IllegalArgumentException("Taxi awaiting charge at illegal location.");
     }
 
     private void taxiOutOfService(RoadModel rm, TimeLapse time, PDPModel pm) {
@@ -267,6 +284,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                     throw new IllegalArgumentException("Multiple charging locations at single node!");
 
                 Candidate candidate = candidateSet.get(0);
+                currentChargingLocation = candidate;
                 if (candidate.isChargingAgentAvailable()) {
                     if (!candidate.getChargingAgent().isActiveUsage()) {
                         candidate.getChargingAgent().setActiveUsage(true);
@@ -279,11 +297,15 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                         this.respawnLocation = this.chargingLocation;
                         rm.removeObject(this);
                     }
-                } else {
+                } else if (candidate.getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().size() > 0) {
                     candidate.taxiJoinsWaitingQueue(this);
                     this.taxiMode = TaxiMode.AWAITING_CHARGE;
                     this.respawnLocation = this.chargingLocation;
                     rm.removeObject(this);
+                } else {
+                    this.taxiMode = TaxiMode.NO_SERVICE;
+                    this.chargingLocation = null;
+                    this.currentChargingLocation = null;
                 }
 
             }
@@ -400,10 +422,16 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     @Override
     public void batteryCharged() {
         final RoadModel rm = getRoadModel();
+        if (currentChargingLocation != null)
+            currentChargingLocation.getChargingAgent().taxiLeavesChargingAgent();
         if (!rm.containsObject(this))
             rm.addObjectAt(this, this.respawnLocation);
         this.taxiMode = TaxiMode.IN_SERVICE;
+
+        this.currentChargingLocation = null;
+        this.chargingLocation = null;
         numOfChargings++;
+
     }
 
     /***

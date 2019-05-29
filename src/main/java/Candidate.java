@@ -3,6 +3,7 @@ import com.github.rinde.rinsim.geom.Point;
 import core.model.pdp.Depot;
 import core.model.road.GraphRoadModel;
 import core.model.road.RoadModel;
+import core.model.road.RoadUser;
 
 import javax.measure.Measure;
 import javax.measure.quantity.Length;
@@ -186,11 +187,13 @@ public class Candidate extends Depot {
         return this.chargingAgentAvailable;
     }
 
-    public double getDistanceFrom(Point targetPoint) {
+    public double getDistanceFrom(Point targetPoint, Class<Taxi> taxiClass, UUID ownerId) {
         if (this.position == targetPoint)
             return 0;
         final RoadModel rm = getRoadModel();
-        return getDistanceOfPath(rm, this.position, targetPoint);
+        List<RoadUser> taxis = new ArrayList<RoadUser>(rm.getObjects((RoadUser r) -> r.getClass().isAssignableFrom(taxiClass)
+                && ((Taxi) r).getID().equals(ownerId)));
+        return getDistanceOfPath(rm, this, (Taxi) taxis.get(0));
     }
 
     public boolean deployTaxiIntentionAnt(TaxiIntentionAnt taxiIntentionAnt) {
@@ -217,18 +220,18 @@ public class Candidate extends Depot {
         return waitingTaxis.size() > 0;
     }
 
-    private double getDistanceOfPath(RoadModel rm, Point start, Point destination) {
-        com.google.common.base.Optional<? extends Connection<?>> conn = ((GraphRoadModel) rm).getConnection(this);
-        Point from;
+    private double getDistanceOfPath(RoadModel rm, Candidate start, Taxi taxi) {
+        com.google.common.base.Optional<? extends Connection<?>> conn = ((GraphRoadModel) rm).getConnection(taxi);
+        Point to;
         double dist = 0;
         if (conn.isPresent()) {
-            dist += Point.distance(start, conn.get().to());
-            from = conn.get().to();
+            dist += Point.distance(rm.getPosition(taxi), conn.get().to());
+            to = conn.get().to();
         } else {
-            from = getRoadModel().getPosition(this);
+            to = rm.getPosition(taxi);
         }
 
-        List<Point> path = getRoadModel().getShortestPathTo(from, destination);
+        List<Point> path = getRoadModel().getShortestPathTo(rm.getPosition(this), to);
         Measure<Double, Length> distance = rm.getDistanceOfPath(path);
         // total distance is the sum of distance and dist
 
