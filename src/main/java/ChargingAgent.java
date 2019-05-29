@@ -107,8 +107,10 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
     private void updateActiveUsage() {
         if (!isActiveUsage()) {
             Taxi taxi = currentChargingLocation.getTaxiFromWaitingList();
-            if (taxi != null)
+            if (taxi != null) {
                 taxi.setTaxiMode(Taxi.TaxiMode.CHARGING);
+                setActiveUsage(true);
+            }
         }
     }
 
