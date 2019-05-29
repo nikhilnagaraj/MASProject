@@ -1,7 +1,11 @@
+import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Point;
 import core.model.pdp.Depot;
+import core.model.road.GraphRoadModel;
 import core.model.road.RoadModel;
 
+import javax.measure.Measure;
+import javax.measure.quantity.Length;
 import java.util.*;
 
 public class Candidate extends Depot {
@@ -9,17 +13,19 @@ public class Candidate extends Depot {
     private PheromoneInfrastructure pheromoneInfrastructure;
     private Point position;
     private boolean chargingAgentAvailable = false;
+    private ChargingAgentTaxiInterface chargingAgent;
     private Set<Candidate> otherCandidates;
     private int waitingSpots;
     private ArrayList<Taxi> waitingTaxis;
 
 
-    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position, int waitingSpots) {
+    Candidate(PheromoneInfrastructure pheromoneInfrastructure, Point position, int waitingSpots, UUID ID) {
         super(position);
         this.pheromoneInfrastructure = pheromoneInfrastructure;
         this.position = position;
         this.waitingSpots = waitingSpots;
-        uniqueID = UUID.randomUUID();
+        this.waitingTaxis = new ArrayList<Taxi>();
+        this.uniqueID = ID;
     }
 
 
@@ -43,17 +49,23 @@ public class Candidate extends Depot {
         this.otherCandidates = otherCandidates;
     }
 
-    public void chargingAgentArrivesAtLocation() {
+    public void chargingAgentArrivesAtLocation(ChargingAgentTaxiInterface chargingAgent) {
         chargingAgentAvailable = true;
+        this.chargingAgent = chargingAgent;
     }
 
     public void chargingAgentLeavesLocation() {
         chargingAgentAvailable = false;
+        this.chargingAgent = null;
     }
 
     public void taxiJoinsWaitingQueue(Taxi taxi) {
+        assert waitingSpots > 0;
+
+        pheromoneInfrastructure.removeTaxiIntentionPheromone(taxi.getID());
         waitingSpots--;
         waitingTaxis.add(taxi);
+
     }
 
     public void taxiLeavesWaitingQueue(Taxi taxi) {
@@ -61,6 +73,13 @@ public class Candidate extends Depot {
         waitingTaxis.remove(taxi);
     }
 
+    public boolean isChargingAgentAvailable() {
+        return chargingAgentAvailable;
+    }
+
+    public ChargingAgentTaxiInterface getChargingAgent() {
+        return chargingAgent;
+    }
 
     /***
      * deploys ant at a given candidate and returns exploration report.
@@ -121,15 +140,15 @@ public class Candidate extends Depot {
                         .values().stream().findFirst().get().getLifeTime();
             }
         }
-
         boolean reservationsPresent = false;
-        boolean waitingSpotsAvailable = false;
+        boolean waitingSpotsAvailable = true;
         Map<UUID, TaxiIntentionPheromone> taxiIntentionPheromonesOnDeployedNode
                 = pheromoneInfrastructure.getTaxiIntentionPheromoneDetails();
         if (!taxiIntentionPheromonesOnDeployedNode.isEmpty()) {
             reservationsPresent = true;
-            if (waitingSpots > 0) {
-                waitingSpotsAvailable = true;
+            if (waitingSpots - taxiIntentionPheromonesOnDeployedNode.size() == 0) {
+                waitingSpotsAvailable = false;
+            } else {
                 for (Map.Entry<UUID, TaxiIntentionPheromone> entry
                         : taxiIntentionPheromonesOnDeployedNode.entrySet()) {
                     Optional<Taxi> retrievedTaxi = waitingTaxis.stream()
@@ -168,7 +187,51 @@ public class Candidate extends Depot {
     }
 
     public double getDistanceFrom(Point targetPoint) {
+        if (this.position == targetPoint)
+            return 0;
         final RoadModel rm = getRoadModel();
-        return rm.getDistanceOfPath(rm.getShortestPathTo(this.position, targetPoint)).getValue();
+        return getDistanceOfPath(rm, this.position, targetPoint);
+    }
+
+    public boolean deployTaxiIntentionAnt(TaxiIntentionAnt taxiIntentionAnt) {
+
+        Candidate bestCandidate = taxiIntentionAnt.getIntentionPlan().getChosenCandidate();
+        if (bestCandidate.waitingSpots - bestCandidate.getPheromoneInfrastructure()
+                .getTaxiIntentionPheromoneDetails().size() > 0)
+            return bestCandidate.getPheromoneInfrastructure().dropPheromone(taxiIntentionAnt.getOwnerId(),
+                    new TaxiIntentionPheromone(taxiIntentionAnt.getPheromoneLifetime(), taxiIntentionAnt.getOwnerId()));
+        else
+            return false;
+
+    }
+
+    public Taxi getTaxiFromWaitingList() {
+        Taxi taxi = null;
+        if (waitingTaxis.size() > 0)
+            taxi = waitingTaxis.get(0);
+        taxiLeavesWaitingQueue(taxi);
+        return taxi;
+    }
+
+    public boolean areTaxisWaiting() {
+        return waitingTaxis.size() > 0;
+    }
+
+    private double getDistanceOfPath(RoadModel rm, Point start, Point destination) {
+        com.google.common.base.Optional<? extends Connection<?>> conn = ((GraphRoadModel) rm).getConnection(this);
+        Point from;
+        double dist = 0;
+        if (conn.isPresent()) {
+            dist += Point.distance(start, conn.get().to());
+            from = conn.get().to();
+        } else {
+            from = getRoadModel().getPosition(this);
+        }
+
+        List<Point> path = getRoadModel().getShortestPathTo(from, destination);
+        Measure<Double, Length> distance = rm.getDistanceOfPath(path);
+        // total distance is the sum of distance and dist
+
+        return dist + distance.getValue();
     }
 }

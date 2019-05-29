@@ -19,10 +19,11 @@ public abstract class Pheromone {
      */
     public boolean decrementLifeTime() {
         this.currentLifeTime--;
-        onDecrementLifeTime(portionLifetimeRemaining());
         if (this.currentLifeTime < 1) {
-            evaporated = true;
+            this.evaporated = true;
+            return evaporated;
         }
+        onDecrementLifeTime(portionLifetimeRemaining());
         return evaporated;
     }
 

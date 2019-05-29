@@ -23,8 +23,8 @@ public class ChargeExplorationAnt extends Ant {
     private void visitOtherNodes(Candidate candidate) {
 
         for (Candidate candidate1 : candidate.getOtherCandidates()) {
-            CandidateData candidateData = new CandidateData(candidate,
-                    candidate.getPheromoneInfrastructure().smellTaxiExplorationPheromones());
+            CandidateData candidateData = new CandidateData(candidate1,
+                    candidate1.getPheromoneInfrastructure().smellTaxiExplorationPheromones());
             taxiPheromoneStrengthData.add(candidateData);
         }
 
@@ -32,6 +32,17 @@ public class ChargeExplorationAnt extends Ant {
 
     public Set<CandidateData> getTaxiPheromoneStrengthData() {
         return taxiPheromoneStrengthData;
+    }
+
+    @Override
+    public String toString() {
+        String result = "Data obtained by exploration ant is as follows: \n";
+
+        for (CandidateData cData : taxiPheromoneStrengthData) {
+            result += cData.toString();
+        }
+
+        return result;
     }
 
     class CandidateData {
@@ -68,6 +79,12 @@ public class ChargeExplorationAnt extends Ant {
             CandidateData cData = (CandidateData) obj;
 
             return cData.getUniqueID().equals(this.uniqueID);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Pheromone Strength at " +
+                    uniqueID.toString() + " - " + String.valueOf(getTaxiPheromoneStrength()) + ".\n");
         }
 
     }

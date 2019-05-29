@@ -64,4 +64,5 @@ public interface IParcel {
      */
     long getDeliveryDuration();
 
+
 }

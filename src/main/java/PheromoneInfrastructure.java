@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PheromoneInfrastructure implements TickListener {
+
+
     /***
      * The pheromone infrastructure is deployed on candidate nodes and used by ants to interact with each other through pheromones.
      */
@@ -15,6 +17,11 @@ public class PheromoneInfrastructure implements TickListener {
             = new HashMap<UUID, TaxiIntentionPheromone>();
     private Map<UUID, ChargeIntentionPheromone> chargeIntentionPheromones
             = new HashMap<UUID, ChargeIntentionPheromone>();
+    private UUID ID;
+
+    public PheromoneInfrastructure(UUID ID) {
+        this.ID = ID;
+    }
 
     /***
      * Renew the pheromone dropped by an ant that belongs to owner with given ownerId
@@ -22,7 +29,7 @@ public class PheromoneInfrastructure implements TickListener {
      * @param pheromone
      */
     public void dropPheromone(UUID ownerId, TaxiExplorationPheromone pheromone) {
-        taxiExplorationPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
+        taxiExplorationPheromones.remove(ownerId);
         taxiExplorationPheromones.put(ownerId,pheromone);
     }
 
@@ -31,9 +38,10 @@ public class PheromoneInfrastructure implements TickListener {
      * @param ownerId
      * @param pheromone
      */
-    public void dropPheromone(UUID ownerId, TaxiIntentionPheromone pheromone) {
-        taxiIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
+    public boolean dropPheromone(UUID ownerId, TaxiIntentionPheromone pheromone) {
+        taxiIntentionPheromones.remove(ownerId);
         taxiIntentionPheromones.put(ownerId,pheromone);
+        return true;
     }
 
     /***
@@ -42,7 +50,7 @@ public class PheromoneInfrastructure implements TickListener {
      * @param pheromone
      */
     public boolean dropPheromone(UUID ownerId, ChargeIntentionPheromone pheromone) {
-        chargeIntentionPheromones.entrySet().removeIf(entry -> (ownerId.equals(entry.getKey())));
+        chargeIntentionPheromones.remove(ownerId);
         if (chargeIntentionPheromones.isEmpty()) {
             chargeIntentionPheromones.put(ownerId, pheromone);
             return true;
@@ -83,26 +91,40 @@ public class PheromoneInfrastructure implements TickListener {
      */
     @Override
     public void tick(TimeLapse timeLapse) {
-        for(TaxiExplorationPheromone pheromone : taxiExplorationPheromones.values()){
-            pheromone.decrementLifeTime();
-            if(pheromone.isEvaporated()){
-                taxiExplorationPheromones.remove(pheromone);
-            }
+
+        Map<UUID, TaxiExplorationPheromone> newTaxiExplorationPheromones = new HashMap<UUID, TaxiExplorationPheromone>();
+        for (Map.Entry<UUID, TaxiExplorationPheromone> entry : taxiExplorationPheromones.entrySet()) {
+            entry.getValue().decrementLifeTime();
+            if (!entry.getValue().isEvaporated())
+                newTaxiExplorationPheromones.put(entry.getKey(), entry.getValue());
         }
-        for(TaxiIntentionPheromone pheromone : taxiIntentionPheromones.values()){
-            pheromone.decrementLifeTime();
-            if(pheromone.isEvaporated()){
-                taxiIntentionPheromones.remove(pheromone);
-            }
+        this.taxiExplorationPheromones = newTaxiExplorationPheromones;
+
+        Map<UUID, TaxiIntentionPheromone> newTaxiIntentionPheromones = new HashMap<UUID, TaxiIntentionPheromone>();
+        for (Map.Entry<UUID, TaxiIntentionPheromone> entry : taxiIntentionPheromones.entrySet()) {
+            entry.getValue().decrementLifeTime();
+            if (!entry.getValue().isEvaporated())
+                newTaxiIntentionPheromones.put(entry.getKey(), entry.getValue());
         }
-        for(ChargeIntentionPheromone pheromone : chargeIntentionPheromones.values()){
-            pheromone.decrementLifeTime();
-            if(pheromone.isEvaporated()){
-                chargeIntentionPheromones.remove(pheromone);
-            }
+        this.taxiIntentionPheromones = newTaxiIntentionPheromones;
+
+        Map<UUID, ChargeIntentionPheromone> newChargeIntentionPheromones = new HashMap<UUID, ChargeIntentionPheromone>();
+        for (Map.Entry<UUID, ChargeIntentionPheromone> entry : chargeIntentionPheromones.entrySet()) {
+            entry.getValue().decrementLifeTime();
+            if (!entry.getValue().isEvaporated())
+                newChargeIntentionPheromones.put(entry.getKey(), entry.getValue());
         }
+        this.chargeIntentionPheromones = newChargeIntentionPheromones;
     }
 
     @Override
     public void afterTick(TimeLapse timeLapse) { }
+
+    public void removeTaxiIntentionPheromone(UUID id) {
+        taxiIntentionPheromones.remove(id);
+    }
+
+    public void removeChargingIntentionPheromone(UUID id) {
+        chargeIntentionPheromones.remove(id);
+    }
 }

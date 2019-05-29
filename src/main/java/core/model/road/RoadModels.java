@@ -20,6 +20,7 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import core.model.pdp.Parcel;
 
 import javax.annotation.Nullable;
 import javax.measure.Measure;
@@ -30,6 +31,8 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Verify.verifyNotNull;
 
@@ -285,6 +288,27 @@ public final class RoadModels {
                 SI.SECOND)
                 // convert to desired unit
                 .doubleValue(outputTimeUnit);
+    }
+
+    @Nullable
+    public static Parcel findClosestUnallotedObject(Point position, RoadModel rm, Class<Parcel> parcelClass) {
+        Set<Parcel> unallotedParcels = rm.getObjectsOfType(parcelClass).stream().filter((Parcel p) -> !p.isAlloted()).collect(Collectors.toSet());
+        Parcel closestParcel = Graphs.findClosestObject(position, unallotedParcels, new RoadModels.RoadUserToPositionFunction<Parcel>(rm));
+
+        if (closestParcel == null)
+            return null;
+
+        Parcel newClosestParcel = closestParcel;
+        newClosestParcel.setAlloted(true);
+        Point pos = rm.getPosition(closestParcel);
+
+        rm.removeObject(closestParcel);
+        //rm.unregister(closestParcel);
+
+        //rm.register(newClosestParcel);
+        rm.addObjectAt(newClosestParcel, pos);
+
+        return newClosestParcel;
     }
 
     @SuppressWarnings("null")

@@ -60,9 +60,9 @@ import static com.google.common.collect.Maps.newHashMap;
 public final class TaxiExample {
 
     private static final int NUM_DEPOTS = 1;
-    private static final int NUM_TAXIS = 1;
-    private static final int NUM_CUSTOMERS = 40;
-    private static final int NUM_CHARGING_STATIONS = 4;
+    private static final int NUM_TAXIS = 20;
+    private static final int NUM_CUSTOMERS = 10;
+    private static final int NUM_CHARGING_STATIONS = 5;
     private static final int NUM_CHARGING_LOCATIONS = 20;
     private static final int NUM_WAITING_SPOTS = 3;
 
@@ -72,9 +72,12 @@ public final class TaxiExample {
     private static final int DEPOT_CAPACITY = 100;
     private static final int TICKS_AT_LOCATION = 1000;
 
+    private static final int TOTAL_BATTERY_CAPACITY = 20000;
+    private static final int RATE_OF_CHARGE = 100;
+
     private static final int SPEED_UP = 4;
     private static final int MAX_CAPACITY = 3;
-    private static final double NEW_CUSTOMER_PROB = .007;
+    private static final double NEW_CUSTOMER_PROB = .0007;
 
     private static final String MAP_FILE = "/data/maps/leuven-simple.dot";
     private static final Map<String, Graph<MultiAttributeData>> GRAPH_CACHE =
@@ -163,8 +166,11 @@ public final class TaxiExample {
                     DEPOT_CAPACITY));
         }
         for (int i = 0; i < NUM_CHARGING_LOCATIONS; i++) {
-            simulator.register(new Candidate(new PheromoneInfrastructure(),
-                    roadModel.getRandomPosition(rng), NUM_WAITING_SPOTS));
+            UUID ID = UUID.randomUUID();
+            PheromoneInfrastructure pheromoneInfrastructure = new PheromoneInfrastructure(ID);
+            simulator.register(pheromoneInfrastructure);
+            simulator.register(new Candidate(pheromoneInfrastructure,
+                    roadModel.getRandomPosition(rng), NUM_WAITING_SPOTS, ID));
         }
 
         Set<Candidate> chargingLocationSet = roadModel.getObjectsOfType(Candidate.class);
@@ -173,7 +179,7 @@ public final class TaxiExample {
         }
 
         for (int i = 0; i < NUM_TAXIS; i++) {
-            AgentBattery newBattery = new AgentBattery(5000, 1000);
+            AgentBattery newBattery = new AgentBattery(TOTAL_BATTERY_CAPACITY, RATE_OF_CHARGE);
             simulator.register(new Taxi(roadModel.getRandomPosition(rng),
                     TAXI_CAPACITY, newBattery, UUID.randomUUID()));
         }
