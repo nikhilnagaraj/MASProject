@@ -92,7 +92,6 @@ public final class TaxiExample {
     static int totalNumOfCustomersShowingUp;
     static int totalNumOfChargings;
     static int totalNumOfDeadBatteries;
-    static int totalNumOfCustomersDelivered;
     static int totalNumOfCustomersPickedUp;
     static int totalTimeOfBatteryChargedUp;
     static int totalTimeOfChargingAgentMovement;
@@ -254,12 +253,7 @@ public final class TaxiExample {
                         Integer.toString(Taxi.distanceTravelledToCustomer)};
                 writer.writeNext(data);
             }
-
-
         });
-
-
-
         simulator.start();
         return simulator;
     }
@@ -353,9 +347,12 @@ public final class TaxiExample {
     private static void initStatistics(String filePath){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMHHmmss");
         LocalDateTime now = LocalDateTime.now();
-        String filename = filePath + "stats_" + dtf.format(now) + ".csv";
-        System.out.println("Save statistics for this run in " + filename);
-        statisticsCSV = new File(filename);
+        String filename_statistics = filePath + "stats_" + dtf.format(now) + ".csv";
+        String filename_metrics = filePath + "metrics_" + dtf.format(now) + ".csv";
+        System.out.println("Save statistics for this run in " + filename_statistics);
+        System.out.println("Save metrics for this run in " + filename_metrics);
+        statisticsCSV = new File(filename_statistics);
+        File metricsCSV = new File(filename_metrics);
         try {
             outputfile = new FileWriter(statisticsCSV);
             writer = new CSVWriter(outputfile);
@@ -371,6 +368,47 @@ public final class TaxiExample {
                             "distanceTravelledToChargingAgent",
                             "distanceTravelledToCustomer"};
             writer.writeNext(header);
+            FileWriter outputfile_metrics = new FileWriter(metricsCSV);
+            CSVWriter writer_metrics = new CSVWriter(outputfile_metrics);
+            String[] header_metrics =
+                    {
+                            "NUM_DEPOTS",
+                            "NUM_TAXIS",
+                            "NUM_CUSTOMERS",
+                            "NUM_CHARGING_STATIONS",
+                            "NUM_CHARGING_LOCATIONS",
+                            "NUM_WAITING_SPOTS",
+                            "SERVICE_DURATION",
+                            "TAXI_CAPACITY",
+                            "DEPOT_CAPACITY",
+                            "TICKS_AT_LOCATION",
+                            "TOTAL_BATTERY_CAPACITY",
+                            "RATE_OF_CHARGE",
+                            "SPEED_UP",
+                            "MAX_CAPACITY",
+                            "NEW_CUSTOMER_PROB"
+                    };
+            String[] metrics =
+                    {
+                            Integer.toString(NUM_DEPOTS),
+                            Integer.toString(NUM_TAXIS),
+                            Integer.toString(NUM_CUSTOMERS),
+                            Integer.toString(NUM_CHARGING_STATIONS),
+                            Integer.toString(NUM_CHARGING_LOCATIONS),
+                            Integer.toString(NUM_WAITING_SPOTS),
+                            Long.toString(SERVICE_DURATION),
+                            Integer.toString(TAXI_CAPACITY),
+                            Integer.toString(DEPOT_CAPACITY),
+                            Integer.toString(TICKS_AT_LOCATION),
+                            Integer.toString(TOTAL_BATTERY_CAPACITY),
+                            Integer.toString(RATE_OF_CHARGE),
+                            Integer.toString(SPEED_UP),
+                            Integer.toString(MAX_CAPACITY),
+                            Double.toString(NEW_CUSTOMER_PROB)
+                    };
+            writer_metrics.writeNext(header_metrics);
+            writer_metrics.writeNext(metrics);
+            writer_metrics.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
