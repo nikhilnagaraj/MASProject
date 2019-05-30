@@ -31,10 +31,7 @@ import core.model.time.TimeLapse;
 import javax.measure.Measure;
 import javax.measure.quantity.Length;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +61,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private Candidate currentChargingLocation;
     FileHandler fh;
     private Point respawnLocation;
-    private double distTravelledPerTrip = 0.0;
+
     static double distanceTravelledToChargingAgent = 0;
     static int numOfCustomersPickedUp = 0;
     static int numOfChargings = 0;

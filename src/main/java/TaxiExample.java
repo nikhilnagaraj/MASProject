@@ -43,10 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -67,6 +64,15 @@ public final class TaxiExample {
     private static final int NUM_CHARGING_STATIONS = 5;
     private static final int NUM_CHARGING_LOCATIONS = 20;
     private static final int NUM_WAITING_SPOTS = 3;
+
+    // use the following variables to determine where the customers are allowed to spawn
+    // exp: BIASED_CUSTOMERS_N = true  ---> customers are allowed to spawn and choose their destination on the northern part of the map (< POINT_OF_REFERENCE_Y)
+    private static final boolean BIASED_CUSTOMERS_N = false;
+    private static final boolean BIASED_CUSTOMERS_S = false;
+    private static final boolean BIASED_CUSTOMERS_W = true;
+    private static final boolean BIASED_CUSTOMERS_E = false;
+    static double POINT_OF_REFERENCE_X = 3290000.0;
+    static double POINT_OF_REFERENCE_Y = 2.571E7;
 
     // time in ms
     private static final long SERVICE_DURATION = 60000;
@@ -213,9 +219,10 @@ public final class TaxiExample {
         }
 
         for (int i = 0; i < NUM_CUSTOMERS; i++) {
+            Point rnd_spawn = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
+            Point rnd_dest = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
             simulator.register(new Customer(
-                    Parcel.builder(roadModel.getRandomPosition(rng),
-                            roadModel.getRandomPosition(rng))
+                    Parcel.builder(rnd_spawn, rnd_dest)
                             .serviceDuration(SERVICE_DURATION)
                             .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
                             .buildDTO()));
@@ -227,15 +234,15 @@ public final class TaxiExample {
                 if (time.getStartTime() > endTime) {
                     simulator.stop();
                 } else if (rng.nextDouble() < NEW_CUSTOMER_PROB) {
-
-                    simulator.register(new Customer(
-                            Parcel
-                                    .builder(roadModel.getRandomPosition(rng),
-                                            roadModel.getRandomPosition(rng))
-                                    .serviceDuration(SERVICE_DURATION)
-                                    .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
-                                    .buildDTO()));
-                    totalNumOfCustomersShowingUp++;
+                        Point rnd_spawn = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
+                        Point rnd_dest = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
+                        simulator.register(new Customer(
+                                Parcel
+                                        .builder(rnd_spawn, rnd_dest)
+                                        .serviceDuration(SERVICE_DURATION)
+                                        .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
+                                        .buildDTO()));
+                        totalNumOfCustomersShowingUp++;
                 }
             }
 
@@ -274,6 +281,35 @@ public final class TaxiExample {
         return simulator;
     }
 
+    /**
+     * Use this method to generate a random point that fulfills the constraints
+     * towards POINT_OF_REFERENCE_X and POINT_OF_REFERENCE_Y
+     * @param roadModel the road model on which the biased random point should be generated
+     * @param rng the random number generator used to generate a biased point
+     * @param north if true, points north of POINT_OF_REFERENCE_Y will be generated
+     * @param south if true, points south of POINT_OF_REFERENCE_Y will be generated
+     * @param west if true, points west of POINT_OF_REFERENCE_X will be generated
+     * @param east if true, points east of POINT_OF_REFERENCE_X will be generated
+     * @return point that adheres given constraints
+     */
+    static Point generateBiasedPosition(RoadModel roadModel,
+                                        RandomGenerator rng,
+                                        boolean north,
+                                        boolean south,
+                                        boolean west,
+                                        boolean east){
+        Point point = roadModel.getRandomPosition(rng);
+        if(north && point.y >= POINT_OF_REFERENCE_Y)
+            point = generateBiasedPosition(roadModel, rng, true, south, west, east);
+        if(south && point.y < POINT_OF_REFERENCE_Y)
+            point = generateBiasedPosition(roadModel, rng, north, true, west, east);
+        if(west && point.x > POINT_OF_REFERENCE_X)
+            point = generateBiasedPosition(roadModel, rng, north, south, true, east);
+        if(east && point.x <= POINT_OF_REFERENCE_X)
+            point = generateBiasedPosition(roadModel, rng, north, south, west, true);
+        return point;
+    }
+
     static View.Builder createGui(
             boolean testing,
             @Nullable Display display,
@@ -290,7 +326,7 @@ public final class TaxiExample {
                         .withImageAssociation(
                                 Taxi.class, "/graphics/flat/taxi-32.png")
                         .withImageAssociation(
-                                ChargingAgent.class, "/graphics/flat/truck-64.png")
+                                ChargingAgent.class, "/graphics/flat/warehouse-32.png")
                         .withImageAssociation(
                                 Customer.class, "/graphics/flat/person-blue-32.png"))
                 .with(TaxiRenderer.builder(TaxiRenderer.Language.ENGLISH))
