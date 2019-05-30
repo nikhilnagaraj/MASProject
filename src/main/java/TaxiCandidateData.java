@@ -1,9 +1,7 @@
 class TaxiCandidateData {
 
     private final boolean chargingAgentPresent;
-
     private final boolean chargingAgentIntentionPresent;
-
     private final boolean reservationsPresent;
     private final boolean waitingSpotsAvailable;
     private final double expectedWaitingTime;

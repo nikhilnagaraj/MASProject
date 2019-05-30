@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/***
+ * The pheromone infrastructure is deployed on candidate nodes and used by ants to interact with each other through pheromones.
+ */
 public class PheromoneInfrastructure implements TickListener {
 
-
-    /***
-     * The pheromone infrastructure is deployed on candidate nodes and used by ants to interact with each other through pheromones.
-     */
     private Map<UUID, TaxiExplorationPheromone> taxiExplorationPheromones
             = new HashMap<UUID, TaxiExplorationPheromone>();
     private Map<UUID, TaxiIntentionPheromone> taxiIntentionPheromones

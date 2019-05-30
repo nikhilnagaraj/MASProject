@@ -51,13 +51,17 @@ import java.util.UUID;
 import static com.google.common.collect.Maps.newHashMap;
 
 /**
- * Example showing a fleet of taxis that have to pickup and transport customers
- * around the city of Leuven.
- * <p>
- * If this class is run on MacOS it might be necessary to use
- * -XstartOnFirstThread as a VM argument.
- *
- * @author Rinde van Lon
+ * In this experimental setup, TaxiExample is extended on following functionality:
+ *  - Taxis have battery capacity
+ *  - Taxis have to charge at Mobile Battery Stations
+ *  - Mobile Battery Stations have to dock at a dedicated spot which we call Candidate
+ *  - Taxis and Mobile Battery Stations cannot communicate directly but have to use DMAS to communicate through the Candidates
+ *  - Taxis can only contact the closest Candidate
+ *  - Taxis have to "decide" for a close Candidate given their communication constraints (TaxiExplorationAnt)
+ *  - Taxis have to reserve a Charging Station in order to coordinate with other Taxis (TaxiIntentionAnts)
+ *  - Mobile Charging Stations want to find the optimal spot for serving as many taxis as possible (ChargeExplorationAnt)
+ *  - Mobile Charging Stations have to signal Taxis where they plan to move to (ChargeIntentionAnt)
+ * @author Nikhil Nagaraj, Fabian Fingerhut, Rinde van Lon
  */
 public final class TaxiExample {
 
@@ -74,7 +78,6 @@ public final class TaxiExample {
     private static final boolean BIASED_CUSTOMERS_S = false;
     private static final boolean BIASED_CUSTOMERS_W = true;
     private static final boolean BIASED_CUSTOMERS_E = false;
-
     static double POINT_OF_REFERENCE_X = 3290000.0;
     static double POINT_OF_REFERENCE_Y = 2.571E7;
 
@@ -96,19 +99,17 @@ public final class TaxiExample {
     private static final long TEST_STOP_TIME = 20 * 60 * 1000;
     private static final int TEST_SPEED_UP = 64;
 
-
-    public static String experimentID;
-
     // statistical evaluation
+    public static String experimentID;
     static String STATISTICS_PATH = "statistics/";
+    static String TAXI_LOG_PATH = "logs/";
+    static String CHARGING_LOG_PATH = "chlogs/";
     static File statisticsCSV;
-    static FileWriter outputfile;
     static CSVWriter writer;
     static int totalNumOfCustomersShowingUp;
     static int totalNumOfCustomersPickedUp;
     static int totalTimeOfBatteryChargedUp;
     static int totalTimeOfChargingAgentMovement;
-    static int totalTimeCustomerSpendsWaiting;
 
     private TaxiExample() {
     }
@@ -121,20 +122,7 @@ public final class TaxiExample {
      */
     public static void main(@Nullable String[] args) throws IOException {
         initStatistics(STATISTICS_PATH);
-
-        //Setup Logging directory
-        try {
-            long countLogs = Files.find(
-                    Paths.get("logs"),
-                    1,  // how deep do we want to descend
-                    (path, attributes) -> attributes.isDirectory()
-            ).count() - 1; // '-1' because '/logs' is also counted in
-            experimentID = String.valueOf(countLogs + 1);
-            new File(String.format("logs/" + experimentID)).mkdir();
-            new File(String.format("chlogs/" + experimentID)).mkdir();
-        } catch (IOException e) {
-            throw new IOException("Folder does not exist.");
-        }
+        initLogging(TAXI_LOG_PATH, CHARGING_LOG_PATH);
 
         //Setup and run example
         final long endTime = args != null && args.length >= 1 ? Long
@@ -147,7 +135,6 @@ public final class TaxiExample {
         try {
             writer.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -250,7 +237,7 @@ public final class TaxiExample {
                 }
             }
 
-            /***
+            /**
              * save statistics after tick
              * @param timeLapse The time lapse that is handed to this object.
              */
@@ -314,6 +301,14 @@ public final class TaxiExample {
         return point;
     }
 
+    /**
+     * create GUI
+     * @param testing
+     * @param display
+     * @param m
+     * @param list
+     * @return
+     */
     static View.Builder createGui(
             boolean testing,
             @Nullable Display display,
@@ -354,7 +349,11 @@ public final class TaxiExample {
         return view;
     }
 
-    // load the graph file
+    /**
+     * load the graph file
+     * @param name
+     * @return
+     */
     static Graph<MultiAttributeData> loadGraph(String name) {
         try {
             if (GRAPH_CACHE.containsKey(name)) {
@@ -388,7 +387,6 @@ public final class TaxiExample {
         }
     }
 
-    // currently has no function
     static class TaxiBase extends Depot {
         TaxiBase(Point position, double capacity) {
             super(position);
@@ -400,6 +398,10 @@ public final class TaxiExample {
         }
     }
 
+    /**
+     * enable statistics
+     * @param filePath - the path in which statistics are saved
+     */
     private static void initStatistics(String filePath){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMHHmmss");
         LocalDateTime now = LocalDateTime.now();
@@ -410,7 +412,7 @@ public final class TaxiExample {
         statisticsCSV = new File(filename_statistics);
         File metricsCSV = new File(filename_metrics);
         try {
-            outputfile = new FileWriter(statisticsCSV);
+            FileWriter outputfile = new FileWriter(statisticsCSV);
             writer = new CSVWriter(outputfile);
             String[] header =
                     { "Tick",
@@ -468,5 +470,27 @@ public final class TaxiExample {
             e.printStackTrace();
         }
         totalNumOfCustomersShowingUp = NUM_CUSTOMERS;
+    }
+
+    /***
+     * enable logging
+     * @param taxiLoggingPath - the path in which logs concerning taxis get saved
+     * @param chargingLoggingPath - the path in which logs concerning charging stations get saved
+     */
+    private static void initLogging(String taxiLoggingPath, String chargingLoggingPath){
+        try {
+            new File(String.format(taxiLoggingPath)).mkdir();
+            new File(String.format(chargingLoggingPath)).mkdir();
+            long countLogs = Files.find(
+                    Paths.get("logs"),
+                    1,  // how deep do we want to descend
+                    (path, attributes) -> attributes.isDirectory()
+            ).count() - 1; // '-1' because '/logs' is also counted in
+            experimentID = String.valueOf(countLogs + 1);
+            new File(String.format("logs/" + experimentID)).mkdir();
+            new File(String.format("chlogs/" + experimentID)).mkdir();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

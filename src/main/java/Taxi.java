@@ -31,7 +31,10 @@ import core.model.time.TimeLapse;
 import javax.measure.Measure;
 import javax.measure.quantity.Length;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +44,7 @@ import java.util.logging.SimpleFormatter;
  * Implementation of a very simple taxi agent. It moves to the closest customer,
  * picks it up, then delivers it, repeat.
  *
- * @author Rinde van Lon
+ * @author Nikhil Nagaraj, Fabian Fingerhut, Rinde van Lon
  */
 class Taxi extends Vehicle implements BatteryTaxiInterface {
     private static final int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent

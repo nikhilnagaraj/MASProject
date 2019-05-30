@@ -9,6 +9,11 @@ import javax.measure.Measure;
 import javax.measure.quantity.Length;
 import java.util.*;
 
+/**
+ * A Candidate denotes a spot where mobile charging stations can move to.
+ * Taxis and Mobile Charging Stations can only communicate indirectly through Candidates.
+ * For Communication they use Ants that drop pheromones at these Candidates.
+ */
 public class Candidate extends Depot {
     private UUID uniqueID;
     private PheromoneInfrastructure pheromoneInfrastructure;

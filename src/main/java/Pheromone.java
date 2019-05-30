@@ -1,7 +1,7 @@
 import java.util.UUID;
 
 public abstract class Pheromone {
-    private UUID ownerId; // Id used to uniquely identify owner of pheromone TODO
+    private UUID ownerId; // Id used to uniquely identify owner of pheromone
     private boolean evaporated;
     private long totalLifeTime;
     private long currentLifeTime;
