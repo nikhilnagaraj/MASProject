@@ -56,7 +56,7 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
     }
 
     private void setupLogging() throws IOException {
-        fh = new FileHandler(String.format("C:\\Users\\nikhi\\OneDrive\\Documents\\clogs\\" + this.ID.toString() + ".log"));
+        fh = new FileHandler(String.format("chlogs/" + TaxiExample.experimentID + "/" + this.ID.toString() + ".log"));
         logger.addHandler(fh);
         SimpleFormatter formatter = new SimpleFormatter();
         fh.setFormatter(formatter);
@@ -110,6 +110,7 @@ public class ChargingAgent extends Vehicle implements ChargingAgentTaxiInterface
             if (taxi != null) {
                 taxi.setTaxiMode(Taxi.TaxiMode.CHARGING);
                 setActiveUsage(true);
+                taxi.getLogger().info("Taxi CONNECTED TO CHARGING AGENT.");
             }
         }
     }

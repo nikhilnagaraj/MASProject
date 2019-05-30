@@ -31,7 +31,10 @@ import core.model.time.TimeLapse;
 import javax.measure.Measure;
 import javax.measure.quantity.Length;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,23 +56,26 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private Optional<Parcel> curr;
     private AgentBattery battery;
     private TaxiMode taxiMode;
+
+    static double distanceTravelledToDepot = 0;
+
     Logger logger;
     private Point chargingLocation;
     private Candidate currentChargingLocation;
     FileHandler fh;
     private Point respawnLocation;
     private double distTravelledPerTrip = 0.0;
-
-    // statistics
+    static double distanceTravelledToChargingAgent = 0;
     static int numOfCustomersPickedUp = 0;
     static int numOfChargings = 0;
     static int numOfDeadBatteries = 0;
-    public boolean startedToChargeThisTurn;
+    static double distanceTravelledToCustomer = 0;
+    // statistics
     public boolean pickedUpCustomerThisTurn;
-    public boolean batteryDiedThisTurn;
-    static int distanceTravelledToDepot;
-    static int distanceTravelledToChargingAgent;
-    static int distanceTravelledToCustomer;
+
+    public Logger getLogger() {
+        return logger;
+    }
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
@@ -93,7 +99,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private void setupLogging() throws IOException {
-        fh = new FileHandler(String.format("logs/" + this.ID.toString() + ".log"));
+        fh = new FileHandler(String.format("logs/" + TaxiExample.experimentID + "/" + this.ID.toString() + ".log"));
         logger.addHandler(fh);
         SimpleFormatter formatter = new SimpleFormatter();
         fh.setFormatter(formatter);
@@ -131,9 +137,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         final RoadModel rm = getRoadModel();
         final PDPModel pm = getPDPModel();
 
-        startedToChargeThisTurn = false;
         pickedUpCustomerThisTurn = false;
-        batteryDiedThisTurn = false;
 
         logger.info(String.format("Battery remaining before tick: " +
                 String.valueOf(this.battery.getPercentBatteryRemaining())));
@@ -164,7 +168,8 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         if (currentChargingLocation != null) {
             int chargingPheromoneDetails = currentChargingLocation.
                     getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().size();
-            if (chargingPheromoneDetails != 1) {
+            if (chargingPheromoneDetails != 1 && !currentChargingLocation.isChargingAgentAvailable()) {
+                logger.info("Taxi LEAVES WAITING QUEUE. No charging intention pheromones/charging agent found.");
                 this.taxiMode = TaxiMode.NO_SERVICE;
                 currentChargingLocation = null;
                 chargingLocation = null;
@@ -263,7 +268,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         //System.out.println(String.format("Depot Position: " + depotPosition.toString()));
         if (this.battery.getCurrentBatteryCapacity() > 0) {
             MoveProgress moveDetails = rm.moveTo(this, depotPosition, time);
-            distanceTravelledToDepot++;
+            distanceTravelledToDepot += moveDetails.distance().getValue();
             this.battery.discharge(moveDetails);
 
             if (rm.getPosition(this).equals(depotPosition)) {
@@ -271,6 +276,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 rm.removeObject(this);
             }
         } else {
+            logger.severe(String.format("BATTERY_DEAD"));
             sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
             setTaxiMode(TaxiMode.CHARGING);
             setupCharging();
@@ -279,9 +285,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     }
 
     private void moveToChargingAgent(TimeLapse time, RoadModel rm) {
-        distanceTravelledToChargingAgent++;
+
         if (this.battery.getCurrentBatteryCapacity() > 0) {
             MoveProgress moveDetails = rm.moveTo(this, chargingLocation, time);
+            distanceTravelledToChargingAgent += moveDetails.distance().getValue();
             this.battery.discharge(moveDetails);
 
             if (rm.getPosition(this).equals(chargingLocation)) {
@@ -294,30 +301,37 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 currentChargingLocation = candidate;
                 if (candidate.isChargingAgentAvailable()) {
                     if (!candidate.getChargingAgent().isActiveUsage()) {
+                        logger.info("Taxi CONNECTED TO CHARGING AGENT");
                         candidate.getChargingAgent().setActiveUsage(true);
-                        this.startedToChargeThisTurn = true; // TODO
                         this.taxiMode = TaxiMode.CHARGING;
                         this.respawnLocation = this.chargingLocation;
                         rm.removeObject(this);
                     } else {
+                        logger.info("Taxi JOINS WAITING QUEUE. Charging Agent available.");
                         candidate.taxiJoinsWaitingQueue(this);
                         this.taxiMode = TaxiMode.AWAITING_CHARGE;
                         this.respawnLocation = this.chargingLocation;
                         rm.removeObject(this);
                     }
-                } else if (candidate.getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().size() > 0) {
-                    candidate.taxiJoinsWaitingQueue(this);
-                    this.taxiMode = TaxiMode.AWAITING_CHARGE;
-                    this.respawnLocation = this.chargingLocation;
-                    rm.removeObject(this);
                 } else {
-                    this.taxiMode = TaxiMode.NO_SERVICE;
-                    this.chargingLocation = null;
-                    this.currentChargingLocation = null;
+                    if (candidate.getPheromoneInfrastructure().getChargeIntentionPheromoneDetails().size() > 0) {
+                        logger.info("Taxi JOINS WAITING QUEUE. Charging Agent should arrive soon.");
+                        candidate.taxiJoinsWaitingQueue(this);
+                        this.taxiMode = TaxiMode.AWAITING_CHARGE;
+                        this.respawnLocation = this.chargingLocation;
+                        rm.removeObject(this);
+                    } else {
+                        logger.info("Taxi LEAVES CHARGING LOCATION. It doesn't know why it is here.");
+                        this.taxiMode = TaxiMode.NO_SERVICE;
+                        this.chargingLocation = null;
+                        this.currentChargingLocation = null;
+
+                    }
                 }
 
             }
         } else {
+            logger.severe(String.format("BATTERY_DEAD"));
             sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
             setTaxiMode(TaxiMode.CHARGING);
             setupCharging();
@@ -328,19 +342,20 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
 
     private void moveToPickUpParcel(TimeLapse time, RoadModel rm, PDPModel pm) {
         if (this.battery.getCurrentBatteryCapacity() > 0) {
-            distanceTravelledToCustomer++;
             MoveProgress moveDetails = rm.moveTo(this, curr.get(), time);
+            distanceTravelledToCustomer += moveDetails.distance().getValue();
             this.battery.discharge(moveDetails);
 
             if (rm.equalPosition(this, curr.get())) {
                 // pickup customer
                 pm.pickup(this, curr.get(), time);
                 sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
-                this.numOfCustomersPickedUp++;
+                numOfCustomersPickedUp++;
                 this.pickedUpCustomerThisTurn = true;
 
             }
         } else {
+            logger.severe(String.format("BATTERY_DEAD"));
             unallotPassenger(rm);
             sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
             setTaxiMode(TaxiMode.CHARGING);
@@ -374,6 +389,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
             }
         } else {
+            logger.severe(String.format("BATTERY_DEAD"));
             removePassenger(time);
             sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
             setTaxiMode(TaxiMode.CHARGING);
@@ -428,8 +444,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     private void setupCharging() {
         final RoadModel rm = getRoadModel();
         this.respawnLocation = rm.getRandomPosition(Simulator.getRandomGenerator());
-        this.numOfDeadBatteries++;
-        this.batteryDiedThisTurn = true;
+        numOfDeadBatteries++;
     }
 
     @Override
@@ -461,25 +476,11 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 curBatteryPercent, curPosition, this.battery.getCurrentBatteryCapacity());
         ExplorationReport report = candidate.deployTaxiExplorationAnt(explorationAnt);
         return chooseBestPlan(report);
-
-        //Comment above code, uncomment this and modify the combineReport method to allow for an ant to be sent to multiple nearest nodes.
-//        HashSet<ExplorationReport> explorationReports = new HashSet<ExplorationReport>();
-//        for(Candidate candidate : this.otherCandidates){
-//            TaxiExplorationAnt explorationAnt = new TaxiExplorationAnt(DEFAULT_EXPLORATION_ANT_LIFETIME, curBatteryCapacity, curPosition);
-//            ExplorationReport plan = candidate.deployTaxiExplorationAnt(explorationAnt);
-//            explorationReports.add(plan);
-//        }
-//        ExplorationReport combinedexplorationReport = combineReports(explorationReports);
     }
 
     private Candidate getClosestCandidate() {
         final RoadModel rm = getRoadModel();
         return RoadModels.findClosestObject(rm.getPosition(this), rm, Candidate.class);
-    }
-
-    private ExplorationReport combineReports(HashSet<ExplorationReport> explorationReports) {
-        //Not used right now.
-        return null;
     }
 
     private boolean sendIntentionAnt(IntentionPlan iPlan) {

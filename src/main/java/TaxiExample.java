@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -84,17 +86,19 @@ public final class TaxiExample {
     private static final long TEST_STOP_TIME = 20 * 60 * 1000;
     private static final int TEST_SPEED_UP = 64;
 
+
+    public static String experimentID;
+
     // statistical evaluation
     static String STATISTICS_PATH = "statistics/";
     static File statisticsCSV;
     static FileWriter outputfile;
     static CSVWriter writer;
     static int totalNumOfCustomersShowingUp;
-    static int totalNumOfChargings;
-    static int totalNumOfDeadBatteries;
     static int totalNumOfCustomersPickedUp;
     static int totalTimeOfBatteryChargedUp;
     static int totalTimeOfChargingAgentMovement;
+    static int totalTimeCustomerSpendsWaiting;
 
     private TaxiExample() {
     }
@@ -105,9 +109,24 @@ public final class TaxiExample {
      * @param args The first option may optionally indicate the end time of the
      *             simulation.
      */
-    public static void main(@Nullable String[] args) {
+    public static void main(@Nullable String[] args) throws IOException {
         initStatistics(STATISTICS_PATH);
 
+        //Setup Logging directory
+        try {
+            long countLogs = Files.find(
+                    Paths.get("logs"),
+                    1,  // how deep do we want to descend
+                    (path, attributes) -> attributes.isDirectory()
+            ).count() - 1; // '-1' because '/logs' is also counted in
+            experimentID = String.valueOf(countLogs + 1);
+            new File(String.format("logs/" + experimentID)).mkdir();
+            new File(String.format("chlogs/" + experimentID)).mkdir();
+        } catch (IOException e) {
+            throw new IOException("Folder does not exist.");
+        }
+
+        //Setup and run example
         final long endTime = args != null && args.length >= 1 ? Long
                 .parseLong(args[0]) : Long.MAX_VALUE;
 
@@ -121,6 +140,7 @@ public final class TaxiExample {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -207,6 +227,7 @@ public final class TaxiExample {
                 if (time.getStartTime() > endTime) {
                     simulator.stop();
                 } else if (rng.nextDouble() < NEW_CUSTOMER_PROB) {
+
                     simulator.register(new Customer(
                             Parcel
                                     .builder(roadModel.getRandomPosition(rng),
@@ -225,10 +246,6 @@ public final class TaxiExample {
             @Override
             public void afterTick(TimeLapse timeLapse) {
                 for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)) {
-                    if(taxi.startedToChargeThisTurn)
-                        totalNumOfChargings++;
-                    if(taxi.batteryDiedThisTurn)
-                        totalNumOfDeadBatteries++;
                     if(taxi.pickedUpCustomerThisTurn)
                         totalNumOfCustomersPickedUp++;
                 }
@@ -243,14 +260,13 @@ public final class TaxiExample {
                 String[] data = {
                         Long.toString(timeLapse.getTime()),
                         Integer.toString(totalNumOfCustomersShowingUp),
-                        Integer.toString(totalNumOfChargings),
-                        Integer.toString(totalNumOfDeadBatteries),
                         Integer.toString(totalNumOfCustomersPickedUp),
                         Integer.toString(totalTimeOfBatteryChargedUp),
                         Integer.toString(totalTimeOfChargingAgentMovement),
-                        Integer.toString(Taxi.distanceTravelledToDepot),
-                        Integer.toString(Taxi.distanceTravelledToChargingAgent),
-                        Integer.toString(Taxi.distanceTravelledToCustomer)};
+                        Integer.toString(Taxi.numOfDeadBatteries),
+                        Double.toString(Taxi.distanceTravelledToDepot),
+                        Double.toString(Taxi.distanceTravelledToChargingAgent),
+                        Double.toString(Taxi.distanceTravelledToCustomer)};
                 writer.writeNext(data);
             }
         });
@@ -274,7 +290,7 @@ public final class TaxiExample {
                         .withImageAssociation(
                                 Taxi.class, "/graphics/flat/taxi-32.png")
                         .withImageAssociation(
-                                ChargingAgent.class, "/graphics/flat/warehouse-32.png")
+                                ChargingAgent.class, "/graphics/flat/truck-64.png")
                         .withImageAssociation(
                                 Customer.class, "/graphics/flat/person-blue-32.png"))
                 .with(TaxiRenderer.builder(TaxiRenderer.Language.ENGLISH))
@@ -359,11 +375,10 @@ public final class TaxiExample {
             String[] header =
                     { "Tick",
                             "numOfCustShowUps",
-                            "numOfCharges",
-                            "numOfDeadBatteries",
                             "numOfCustPickUps",
                             "timeForCharging",
                             "timeBatteryStationMoving",
+                            "numOfDeadBatteries",
                             "distanceTravelledToDepot",
                             "distanceTravelledToChargingAgent",
                             "distanceTravelledToCustomer"};
