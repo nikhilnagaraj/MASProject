@@ -7,13 +7,13 @@ public class TaxiExplorationAnt extends Ant {
     private int numAntGenerations; // number of nodes an ant or its replicas can travel until they die
 
     private double currentBatteryPercent;
-    private Point currentSpotOfAgent; // TODO: use Nodes instead of Point?
+    private Point currentSpotOfAgent;
     private double range;
 
     public TaxiExplorationAnt(UUID ID, int numAntGenerations, double currentBatteryPercent, Point currentSpotOfAgent, double range) {
         super(ID);
         this.numAntGenerations = numAntGenerations;
-        this.currentBatteryPercent = currentBatteryPercent;
+        this.currentBatteryPercent = currentBatteryPercent / 100.0;
         this.currentSpotOfAgent = currentSpotOfAgent;
         this.range = range;
     }
@@ -51,19 +51,8 @@ public class TaxiExplorationAnt extends Ant {
     public double calculateStrengthOfPheromone(Candidate candidate) {
         if (checkIfAgentInRange(candidate)) {
             double rangeHeuristic = calcRangeHeuristic(candidate);
-            // Using the sigmoid function as a heuristic, the strength of the pheromone on a scale of 0 to 1.
-            if (rangeHeuristic != 0.0 && this.currentBatteryPercent != 0.0)
-                return sigmoid(rangeHeuristic * this.currentBatteryPercent);
-            else {
-                if (this.currentBatteryPercent != 0.0)
-                    return sigmoid(this.currentBatteryPercent);
-                else {
-                    if (rangeHeuristic != 0.0)
-                        return sigmoid(rangeHeuristic);
-                    else
-                        return 1.0;
-                }
-            }
+            // Using the linear function (1-x) as a heuristic, the strength of the pheromone on a scale of 0 to 1.
+            return 1 - (rangeHeuristic * this.currentBatteryPercent);
         } else {
             return 0.0;
         }
@@ -85,10 +74,6 @@ public class TaxiExplorationAnt extends Ant {
      */
     private boolean checkIfAgentInRange(Candidate candidate){
         return (candidate.getDistanceFrom(this.getCurrentSpotOfAgent(), Taxi.class, this.getOwnerId()) <= range);
-    }
-
-    private double sigmoid(double x) {
-        return 1 / (1 + Math.exp(-x));
     }
 
     public double getRange() {

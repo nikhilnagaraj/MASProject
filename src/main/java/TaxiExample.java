@@ -43,7 +43,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -71,6 +74,7 @@ public final class TaxiExample {
     private static final boolean BIASED_CUSTOMERS_S = false;
     private static final boolean BIASED_CUSTOMERS_W = true;
     private static final boolean BIASED_CUSTOMERS_E = false;
+
     static double POINT_OF_REFERENCE_X = 3290000.0;
     static double POINT_OF_REFERENCE_Y = 2.571E7;
 
