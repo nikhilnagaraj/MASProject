@@ -67,9 +67,9 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     public boolean startedToChargeThisTurn;
     public boolean pickedUpCustomerThisTurn;
     public boolean batteryDiedThisTurn;
-    static int distanceTravelledToDepot;
-    static int distanceTravelledToChargingAgent;
-    static int distanceTravelledToCustomer;
+    static int distanceTravelledToDepot = 0;
+    static int distanceTravelledToChargingAgent = 0;
+    static int distanceTravelledToCustomer = 0;
 
     Taxi(Point startPosition, int capacity, AgentBattery battery, UUID ID) {
         super(VehicleDTO.builder()
