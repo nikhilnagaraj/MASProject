@@ -76,7 +76,7 @@ public final class TaxiExample {
     // exp: BIASED_CUSTOMERS_N = true  ---> customers are allowed to spawn and choose their destination on the northern part of the map (< POINT_OF_REFERENCE_Y)
     private static final boolean BIASED_CUSTOMERS_N = false;
     private static final boolean BIASED_CUSTOMERS_S = false;
-    private static final boolean BIASED_CUSTOMERS_W = true;
+    private static final boolean BIASED_CUSTOMERS_W = false;
     private static final boolean BIASED_CUSTOMERS_E = false;
     static double POINT_OF_REFERENCE_X = 3290000.0;
     static double POINT_OF_REFERENCE_Y = 2.571E7;
@@ -120,7 +120,7 @@ public final class TaxiExample {
      * @param args The first option may optionally indicate the end time of the
      *             simulation.
      */
-    public static void main(@Nullable String[] args) throws IOException {
+    public static void main(@Nullable String[] args) {
         initStatistics(STATISTICS_PATH);
         initLogging(TAXI_LOG_PATH, CHARGING_LOG_PATH);
 
@@ -403,6 +403,7 @@ public final class TaxiExample {
      * @param filePath - the path in which statistics are saved
      */
     private static void initStatistics(String filePath){
+        new File(String.format(STATISTICS_PATH)).mkdir();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMHHmmss");
         LocalDateTime now = LocalDateTime.now();
         String filename_statistics = filePath + "stats_" + dtf.format(now) + ".csv";
