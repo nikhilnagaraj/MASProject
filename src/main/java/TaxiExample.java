@@ -67,7 +67,7 @@ public final class TaxiExample {
 
     private static final int NUM_DEPOTS = 1;
     private static final int NUM_TAXIS = 20;
-    private static final int NUM_CUSTOMERS = 10;
+    private static final int NUM_CUSTOMERS = (int) (0.95 * NUM_TAXIS);
     private static final int NUM_CHARGING_STATIONS = 5;
     private static final int NUM_CHARGING_LOCATIONS = 20;
     private static final int NUM_WAITING_SPOTS = 3;
@@ -96,8 +96,8 @@ public final class TaxiExample {
     private static final Map<String, Graph<MultiAttributeData>> GRAPH_CACHE =
             newHashMap();
 
-    private static final long TEST_STOP_TIME = 20 * 60 * 1000;
-    private static final int TEST_SPEED_UP = 64;
+    private static final long TEST_STOP_TIME = 15 * 24 * 60 * 60 * 1000;
+    private static final int TEST_SPEED_UP = 1024;
 
     // statistical evaluation
     public static String experimentID;
@@ -130,7 +130,7 @@ public final class TaxiExample {
 
         final String graphFile = args != null && args.length >= 2 ? args[1]
                 : MAP_FILE;
-        run(false, endTime, graphFile, null /* new Display() */, null, null);
+        run(true, endTime, graphFile, null /* new Display() */, null, null);
 
         try {
             writer.close();
@@ -224,7 +224,7 @@ public final class TaxiExample {
             public void tick(TimeLapse time) {
                 if (time.getStartTime() > endTime) {
                     simulator.stop();
-                } else if (rng.nextDouble() < NEW_CUSTOMER_PROB) {
+                } else if (roadModel.getObjectsOfType(Customer.class).size() < NUM_CUSTOMERS) {
                         Point rnd_spawn = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
                         Point rnd_dest = generateBiasedPosition(roadModel, rng, BIASED_CUSTOMERS_N, BIASED_CUSTOMERS_S, BIASED_CUSTOMERS_W, BIASED_CUSTOMERS_E);
                         simulator.register(new Customer(

@@ -49,7 +49,7 @@ import java.util.logging.SimpleFormatter;
 class Taxi extends Vehicle implements BatteryTaxiInterface {
     private static final int DEFAULT_EXPLORATION_ANT_LIFETIME = 1; // denotes how many nodes ants can travel sent by this taxi agent
     private static final int DEFAULT_INTENTION_PHEROMONE_LIFETIME = 100; // number of ticks an intention pheromone will last until it evaporates
-    private static final int LOW_BATTERY = 10;
+    private static final int LOW_BATTERY = 15;
     private static final double SPEED = 1000d;
 
     private final UUID ID;
