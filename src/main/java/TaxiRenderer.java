@@ -79,8 +79,8 @@ public class TaxiRenderer extends AbstractCanvasRenderer implements Model<Void> 
                 text = lang.embark;
             } else if (vs == VehicleState.REMOVING) {
                 text = lang.batteryDead;
-            } else if (size > 0) {
-                text = Integer.toString(size);
+            } else {
+                text = String.format("%.2f", t.getBatteryCapacity());
             }
 
             if (text != null) {

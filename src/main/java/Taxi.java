@@ -128,6 +128,10 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         return this.battery.getExpectedChargingTime();
     }
 
+    public double getBatteryCapacity() {
+        return this.battery.getPercentBatteryRemaining();
+    }
+
     @Override
     public void afterTick(TimeLapse timeLapse) {
     }
