@@ -72,6 +72,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
     static double distanceTravelledToCustomer = 0;
     // statistics
     public boolean pickedUpCustomerThisTurn;
+    public long pickedCustomerWaitingTime;
 
     public Logger getLogger() {
         return logger;
@@ -142,6 +143,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
         final PDPModel pm = getPDPModel();
 
         pickedUpCustomerThisTurn = false;
+        pickedCustomerWaitingTime = 0;
 
         logger.info(String.format("Battery remaining before tick: " +
                 String.valueOf(this.battery.getPercentBatteryRemaining())));
@@ -356,7 +358,7 @@ class Taxi extends Vehicle implements BatteryTaxiInterface {
                 sendExplorationAnts(this.battery.getPercentBatteryRemaining(), rm.getPosition(this));
                 numOfCustomersPickedUp++;
                 this.pickedUpCustomerThisTurn = true;
-
+                pickedCustomerWaitingTime = time.getTime() - ((TaxiExample.Customer) curr.get()).startTick;
             }
         } else {
             logger.severe(String.format("BATTERY_DEAD"));

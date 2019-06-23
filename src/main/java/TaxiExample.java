@@ -101,15 +101,16 @@ public final class TaxiExample {
 
     // statistical evaluation
     public static String experimentID;
-    static String STATISTICS_PATH = "statistics/";
-    static String TAXI_LOG_PATH = "logs/";
-    static String CHARGING_LOG_PATH = "chlogs/";
-    static File statisticsCSV;
-    static CSVWriter writer;
-    static int totalNumOfCustomersShowingUp;
-    static int totalNumOfCustomersPickedUp;
-    static int totalTimeOfBatteryChargedUp;
-    static int totalTimeOfChargingAgentMovement;
+    public static String STATISTICS_PATH = "statistics/";
+    public static String TAXI_LOG_PATH = "logs/";
+    public static String CHARGING_LOG_PATH = "chlogs/";
+    public static File statisticsCSV;
+    public static CSVWriter writer;
+    public static int totalNumOfCustomersShowingUp;
+    public static int totalNumOfCustomersPickedUp;
+    public static int totalTimeOfBatteryChargedUp;
+    public static int totalTimeOfChargingAgentMovement;
+    public static long totalCustomerWaitingTime = 0;
 
     private TaxiExample() {
     }
@@ -216,7 +217,7 @@ public final class TaxiExample {
                     Parcel.builder(rnd_spawn, rnd_dest)
                             .serviceDuration(SERVICE_DURATION)
                             .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
-                            .buildDTO()));
+                            .buildDTO(), 0));
         }
 
         simulator.addTickListener(new TickListener() {
@@ -232,7 +233,7 @@ public final class TaxiExample {
                                         .builder(rnd_spawn, rnd_dest)
                                         .serviceDuration(SERVICE_DURATION)
                                         .neededCapacity(1 + rng.nextInt(MAX_CAPACITY))
-                                        .buildDTO()));
+                                        .buildDTO(), time.getStartTime()));
                         totalNumOfCustomersShowingUp++;
                 }
             }
@@ -246,6 +247,7 @@ public final class TaxiExample {
                 for(Taxi taxi : roadModel.getObjectsOfType(Taxi.class)) {
                     if(taxi.pickedUpCustomerThisTurn)
                         totalNumOfCustomersPickedUp++;
+                    totalCustomerWaitingTime += taxi.pickedCustomerWaitingTime;
                 }
                 for(ChargingAgent chargingAgent : roadModel.getObjectsOfType(ChargingAgent.class)){
                     if(chargingAgent.isActiveUsage()){
@@ -261,6 +263,7 @@ public final class TaxiExample {
                         Integer.toString(totalNumOfCustomersPickedUp),
                         Integer.toString(totalTimeOfBatteryChargedUp),
                         Integer.toString(totalTimeOfChargingAgentMovement),
+                        Long.toString(totalCustomerWaitingTime),
                         Integer.toString(Taxi.numOfDeadBatteries),
                         Double.toString(Taxi.distanceTravelledToDepot),
                         Double.toString(Taxi.distanceTravelledToChargingAgent),
@@ -375,30 +378,6 @@ public final class TaxiExample {
     }
 
     /**
-     * A customer with very permissive time windows.
-     */
-    static class Customer extends Parcel {
-        Customer(ParcelDTO dto) {
-            super(dto);
-        }
-
-        @Override
-        public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {
-        }
-    }
-
-    static class TaxiBase extends Depot {
-        TaxiBase(Point position, double capacity) {
-            super(position);
-            setCapacity(capacity);
-        }
-
-        @Override
-        public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {
-        }
-    }
-
-    /**
      * enable statistics
      * @param filePath - the path in which statistics are saved
      */
@@ -421,6 +400,7 @@ public final class TaxiExample {
                             "numOfCustPickUps",
                             "timeForCharging",
                             "timeBatteryStationMoving",
+                            "customerWaitingTime",
                             "numOfDeadBatteries",
                             "distanceTravelledToDepot",
                             "distanceTravelledToChargingAgent",
@@ -471,6 +451,34 @@ public final class TaxiExample {
             e.printStackTrace();
         }
         totalNumOfCustomersShowingUp = NUM_CUSTOMERS;
+    }
+
+    static class TaxiBase extends Depot {
+        TaxiBase(Point position, double capacity) {
+            super(position);
+            setCapacity(capacity);
+        }
+
+        @Override
+        public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {
+        }
+    }
+
+    /**
+     * A customer with very permissive time windows.
+     */
+    static class Customer extends Parcel {
+
+        long startTick;
+
+        Customer(ParcelDTO dto, long startTick) {
+            super(dto);
+            this.startTick = startTick;
+        }
+
+        @Override
+        public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {
+        }
     }
 
     /***
